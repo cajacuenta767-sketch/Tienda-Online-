@@ -1,5 +1,5 @@
 <%- include('../partials/admin/head') %>
-<% const maxRev = Math.max(1, ...series.map((s) => s.revenue)); const W = 720, H = 220, pad = 36; const bw = (W - pad * 2) / series.length; %>
+<% const maxRev = Math.max(1, ...series.map((s) => s.revenue)); const W = 760, H = 220, pad = 64; const bw = (W - pad * 2) / series.length; %>
 <div class="grid grid-4 stats-grid">
   <div class="stat"><span class="stat__label">Visitas a fichas</span><span class="stat__value mono"><%= metrics.totals.views %></span><span class="stat__sub">acumuladas</span></div>
   <div class="stat"><span class="stat__label">Ventas</span><span class="stat__value mono"><%= metrics.totals.sales %></span><span class="stat__sub">productos vendidos</span></div>
