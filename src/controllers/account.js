@@ -9,6 +9,9 @@ const downloads = require('../models/downloads');
 const access = require('../services/access');
 const ordersService = require('../services/orders');
 const v = require('../utils/validate');
+const licenses = require('../models/licenses');
+const tickets = require('../models/tickets');
+const signed = require('../services/downloads');
 
 exports.dashboard = (req, res) => {
   const user = res.locals.currentUser;
@@ -21,8 +24,8 @@ exports.dashboard = (req, res) => {
   } else if (ownedIds.length) {
     downloadable = products.byIds(ownedIds).map((p) => ({ ...p, viaMembership: false }));
   }
-  const tab = ['compras', 'descargas', 'membresia', 'perfil'].includes(req.query.tab) ? req.query.tab : 'compras';
-  res.render('account/dashboard', { title: 'Mi cuenta', myOrders, membership, downloadable, tab, history: memberships.allForUser(user.id) });
+  const tab = ['compras', 'descargas', 'membresia', 'licencias', 'perfil'].includes(req.query.tab) ? req.query.tab : 'compras';
+  res.render('account/dashboard', { title: 'Mi cuenta', myOrders, membership, downloadable, tab, history: memberships.allForUser(user.id), licenses: licenses.forUser(user.id), openTickets: tickets.forUser(user.id).filter((t) => t.status !== 'closed').length, fullUser: users.findById(user.id) });
 };
 
 exports.order = (req, res, next) => {
@@ -75,6 +78,18 @@ exports.download = (req, res, next) => {
       message: 'No tienes acceso a esta descarga. Compra el producto o activa una membresía.',
     });
   }
+  // Enlace firmado y temporal: evita que la URL de descarga se comparta
+  return res.redirect(`/d/${signed.issue(user.id, product.id)}`);
+};
+
+exports.downloadSigned = (req, res, next) => {
+  const payload = signed.verify(req.params.token);
+  if (!payload) {
+    return res.status(410).render('errors/500', { title: 'Enlace caducado', status: 410, message: 'Este enlace de descarga caducó. Vuelve a tu cuenta y genera uno nuevo.' });
+  }
+  const user = users.findById(payload.u);
+  const product = products.byId(payload.p);
+  if (!user || !product || !access.canDownload(user, product)) return next();
   const filePath = path.join(config.STORAGE_DIR, path.basename(product.file_name));
   const downloadName = `${product.slug}-v${product.version}.zip`;
   products.incrementDownloads(product.id);
@@ -82,4 +97,15 @@ exports.download = (req, res, next) => {
   res.download(filePath, downloadName, (err) => {
     if (err && !res.headersSent) next(Object.assign(new Error('El archivo del producto no está disponible. Contacta a soporte.'), { status: 404 }));
   });
+};
+
+exports.updateProfile = (req, res) => {
+  const name = v.str(req.body.name, 120);
+  const locale = req.body.locale === 'en' ? 'en' : 'es';
+  if (!name) { req.flash('error', 'El nombre es obligatorio.'); return res.redirect('/cuenta?tab=perfil'); }
+  users.updateProfile(res.locals.currentUser.id, { name });
+  users.setLocale(res.locals.currentUser.id, locale);
+  res.cookie('dm-lang', locale, { maxAge: 365 * 24 * 3600 * 1000, sameSite: 'lax' });
+  req.flash('success', 'Perfil actualizado.');
+  return res.redirect('/cuenta?tab=perfil');
 };

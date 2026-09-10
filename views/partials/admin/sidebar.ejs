@@ -5,10 +5,16 @@
     <a href="/admin/productos" class="<%= currentPath.startsWith('/admin/productos') ? 'is-active' : '' %>">Productos</a>
     <a href="/admin/categorias" class="<%= currentPath.startsWith('/admin/categorias') ? 'is-active' : '' %>">Categorías</a>
     <a href="/admin/planes" class="<%= currentPath.startsWith('/admin/planes') ? 'is-active' : '' %>">Planes</a>
+    <a href="/admin/paquetes" class="<%= currentPath.startsWith('/admin/paquetes') ? 'is-active' : '' %>">Paquetes</a>
     <a href="/admin/cupones" class="<%= currentPath.startsWith('/admin/cupones') ? 'is-active' : '' %>">Cupones</a>
     <a href="/admin/pedidos" class="<%= currentPath.startsWith('/admin/pedidos') ? 'is-active' : '' %>">Pedidos</a>
+    <a href="/admin/licencias" class="<%= currentPath.startsWith('/admin/licencias') ? 'is-active' : '' %>">Licencias</a>
+    <a href="/admin/metricas" class="<%= currentPath.startsWith('/admin/metricas') ? 'is-active' : '' %>">Métricas</a>
     <a href="/admin/resenas" class="<%= currentPath.startsWith('/admin/resenas') ? 'is-active' : '' %>">Reseñas <% if (typeof adminBadges !== 'undefined' && adminBadges.reviews) { %><span class="count"><%= adminBadges.reviews %></span><% } %></a>
-    <a href="/admin/usuarios" class="<%= currentPath.startsWith('/admin/usuarios') ? 'is-active' : '' %>">Usuarios</a>
+    <a href="/admin/usuarios" class="<%= currentPath.startsWith('/admin/usuarios') ? 'is-active' : '' %>">Clientes</a>
+    <a href="/admin/tickets" class="<%= currentPath.startsWith('/admin/tickets') ? 'is-active' : '' %>">Tickets <% if (typeof adminBadges !== 'undefined' && adminBadges.tickets) { %><span class="count"><%= adminBadges.tickets %></span><% } %></a>
+    <a href="/admin/blog" class="<%= currentPath.startsWith('/admin/blog') ? 'is-active' : '' %>">Blog</a>
+    <a href="/admin/correos" class="<%= currentPath.startsWith('/admin/correos') ? 'is-active' : '' %>">Correos</a>
     <a href="/admin/mensajes" class="<%= currentPath.startsWith('/admin/mensajes') ? 'is-active' : '' %>">Mensajes <% if (typeof adminBadges !== 'undefined' && adminBadges.messages) { %><span class="count"><%= adminBadges.messages %></span><% } %></a>
     <a href="/admin/ajustes" class="<%= currentPath.startsWith('/admin/ajustes') ? 'is-active' : '' %>">Ajustes</a>
   </nav>

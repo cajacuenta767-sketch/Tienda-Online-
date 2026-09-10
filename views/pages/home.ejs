@@ -9,8 +9,8 @@
         <h1 class="hero__title"><%- escapeHtml(settings.hero_title).replace(/\b(vender|instalar|crecer|negocio|software)\b/i, '<em>$1</em>') %></h1>
         <p class="hero__subtitle"><%= settings.hero_subtitle %></p>
         <div class="cluster hero__cta">
-          <a class="btn btn--primary btn--lg" href="/tienda">Explorar la tienda</a>
-          <a class="btn btn--secondary btn--lg" href="/membresia">Ver membresías</a>
+          <a class="btn btn--primary btn--lg" href="/tienda"><%= t('home.explore') %></a>
+          <a class="btn btn--secondary btn--lg" href="/membresia"><%= t('home.plans') %></a>
         </div>
         <div class="hero__proof">
           <div class="avatars" aria-hidden="true"><span>JR</span><span>MA</span><span>LP</span><span>+</span></div>
@@ -123,6 +123,34 @@
           <div class="testimonial__who"><span class="avatar" aria-hidden="true"><%= t.user_name.charAt(0).toUpperCase() %></span><div><strong><%= t.user_name %></strong><small>sobre <a href="/producto/<%= t.product_slug %>"><%= t.product_title %></a></small></div></div>
         </article>
       <% }) %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<% if (bundles.length) { %>
+<section class="section">
+  <div class="container">
+    <div class="section__head">
+      <div><p class="eyebrow"><%= t('home.bundlesEyebrow') %></p><h2><%= t('home.bundles') %></h2></div>
+      <a class="link-more" href="/paquetes"><%= t('home.seeNew') %></a>
+    </div>
+    <div class="grid grid-3">
+      <% bundles.forEach(function (b) { %><%- include('../partials/bundle-card', { bundle: b }) %><% }) %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<% if (posts.length) { %>
+<section class="section section--alt">
+  <div class="container">
+    <div class="section__head">
+      <div><p class="eyebrow"><%= t('home.postsEyebrow') %></p><h2><%= t('home.posts') %></h2></div>
+      <a class="link-more" href="/blog"><%= t('home.seeNew') %></a>
+    </div>
+    <div class="grid grid-3">
+      <% posts.forEach(function (post) { %><%- include('../partials/post-card', { post }) %><% }) %>
     </div>
   </div>
 </section>

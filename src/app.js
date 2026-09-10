@@ -26,7 +26,7 @@ function createApp() {
 
   app.use(security);
   app.use(express.static(config.PUBLIC_DIR, { maxAge: config.IS_PROD ? '7d' : 0 }));
-  app.use('/uploads', express.static(config.UPLOADS_DIR, { maxAge: config.IS_PROD ? '7d' : 0 }));
+  app.use('/uploads', express.static(config.UPLOADS_DIR, { maxAge: config.IS_PROD ? '30d' : 0, immutable: config.IS_PROD, etag: true }));
 
   // Webhook de Stripe: cuerpo crudo, antes de los parsers y sin sesión/CSRF.
   app.post('/pago/stripe/webhook', express.raw({ type: 'application/json', limit: '1mb' }), checkout.stripeWebhook);
@@ -52,6 +52,7 @@ function createApp() {
   app.use(flash);
   app.use(csrf.attach);
   app.use(locals);
+  app.use(require('./i18n').middleware);
 
   require('./routes')(app);
 

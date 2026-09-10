@@ -8,3 +8,4 @@ public/uploads/*
 public/img/seed/
 npm-debug.log*
 .DS_Store
+backups/

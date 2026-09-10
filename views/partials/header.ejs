@@ -1,6 +1,7 @@
 <% if (settings.promo_banner_active === '1' && settings.promo_banner_text) { %>
 <div class="promo-banner" data-promo hidden><div class="container"><span class="promo-banner__text"><%= settings.promo_banner_text %></span> <a href="/tienda?oferta=1">Ver ofertas →</a><button type="button" class="promo-banner__close" aria-label="Cerrar aviso" data-promo-close>×</button></div></div>
 <% } %>
+<a class="skip-link" href="#main">Saltar al contenido</a>
 <header class="navbar">
   <div class="container navbar__inner">
     <a class="nav__logo" href="/" aria-label="<%= storeName %> — inicio">
@@ -9,45 +10,49 @@
     </a>
     <nav class="nav__links" aria-label="Principal">
       <div class="nav__dropdown" data-dropdown>
-        <button type="button" class="<%= isActive('/tienda') ? 'is-active' : '' %>" aria-haspopup="true" aria-expanded="false">Tienda <span class="caret" aria-hidden="true">▾</span></button>
+        <button type="button" class="<%= isActive('/tienda') ? 'is-active' : '' %>" aria-haspopup="true" aria-expanded="false"><%= t('nav.shop') %> <span class="caret" aria-hidden="true">▾</span></button>
         <div class="nav__menu">
-          <a href="/tienda">Todos los productos</a>
+          <a href="/tienda"><%= t('nav.all') %></a>
           <% navCategories.forEach(function (c) { %>
             <a href="/tienda/categoria/<%= c.slug %>"><%= c.name %> <small><%= c.product_count %></small></a>
           <% }) %>
-          <a href="/tienda?oferta=1">En oferta</a>
+          <a href="/tienda?oferta=1"><%= t('nav.offers') %></a>
+          <a href="/paquetes"><%= t('nav.bundles') %></a>
+          <a href="/comparar"><%= t('nav.compare') %></a>
         </div>
       </div>
-      <a href="/nuevos" class="<%= isActive('/nuevos') ? 'is-active' : '' %>">Nuevos</a>
-      <a href="/actualizaciones" class="<%= isActive('/actualizaciones') ? 'is-active' : '' %>">Actualizaciones</a>
-      <a href="/membresia" class="<%= isActive('/membresia') ? 'is-active' : '' %>">Membresía</a>
-      <a href="/nosotros" class="<%= isActive('/nosotros') ? 'is-active' : '' %>">Nosotros</a>
-      <a href="/contacto" class="<%= isActive('/contacto') ? 'is-active' : '' %>">Contacto</a>
+      <a href="/nuevos" class="<%= isActive('/nuevos') ? 'is-active' : '' %>"><%= t('nav.new') %></a>
+      <a href="/actualizaciones" class="<%= isActive('/actualizaciones') ? 'is-active' : '' %>"><%= t('nav.updates') %></a>
+      <a href="/membresia" class="<%= isActive('/membresia') ? 'is-active' : '' %>"><%= t('nav.membership') %></a>
+      <a href="/blog" class="<%= isActive('/blog') ? 'is-active' : '' %>"><%= t('nav.blog') %></a>
+      <a href="/contacto" class="<%= isActive('/contacto') ? 'is-active' : '' %>"><%= t('nav.contact') %></a>
     </nav>
     <div class="nav__actions">
       <form class="nav__search" action="/tienda" method="get" role="search" data-search>
         <button type="submit" aria-label="Buscar"><%- include('icons', { icon: 'search' }) %></button>
         <label class="sr-only" for="nav-q">Buscar</label>
-        <input id="nav-q" type="search" name="q" placeholder="Buscar sistemas, plantillas…" autocomplete="off" value="<%= typeof q !== 'undefined' ? q : '' %>">
+        <input id="nav-q" type="search" name="q" placeholder="<%= t('nav.search') %>" autocomplete="off" value="<%= typeof q !== 'undefined' ? q : '' %>">
         <div class="search-suggest" data-search-results hidden></div>
       </form>
-      <button class="icon-btn theme-toggle" type="button" data-theme-toggle aria-label="Cambiar entre modo claro y oscuro" title="Modo claro / oscuro"><%- include('icons', { icon: 'sun' }) %><%- include('icons', { icon: 'moon' }) %></button>
+      <a class="icon-btn lang-switch" href="?lang=<%= otherLocale %>" hreflang="<%= otherLocale %>" title="<%= t('common.language') %>: <%= otherLocale.toUpperCase() %>" aria-label="<%= t('common.language') %>"><span><%= otherLocale.toUpperCase() %></span></a>
+      <button class="icon-btn theme-toggle" type="button" data-theme-toggle aria-label="<%= t('nav.theme') %>" title="<%= t('nav.theme') %>"><%- include('icons', { icon: 'sun' }) %><%- include('icons', { icon: 'moon' }) %></button>
       <a class="icon-btn" href="/favoritos" aria-label="Favoritos (<%= favoritesCount %>)" title="Favoritos"><%- include('icons', { icon: 'heart' }) %><span class="count" data-fav-count><%= favoritesCount || '' %></span></a>
       <a class="icon-btn" href="/carrito" aria-label="Carrito (<%= cartCount %>)" title="Carrito"><%- include('icons', { icon: 'cart' }) %><span class="count"><%= cartCount || '' %></span></a>
       <% if (currentUser) { %>
         <div class="nav__dropdown nav__dropdown--right" data-dropdown>
           <button type="button" class="nav__user" aria-haspopup="true" aria-expanded="false"><span class="avatar" aria-hidden="true"><%= currentUser.name.charAt(0).toUpperCase() %></span> <span class="nav__user-name"><%= currentUser.name.split(' ')[0] %></span> <span class="caret" aria-hidden="true">▾</span></button>
           <div class="nav__menu">
-            <a href="/cuenta">Mi cuenta</a>
-            <a href="/cuenta?tab=descargas">Mis descargas</a>
-            <a href="/favoritos">Mis favoritos</a>
-            <% if (currentUser.role === 'admin') { %><a href="/admin">Panel de administración</a><% } %>
-            <form method="post" action="/logout"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit">Cerrar sesión</button></form>
+            <a href="/cuenta"><%= t('nav.account') %></a>
+            <a href="/cuenta?tab=descargas"><%= t('nav.downloads') %></a>
+            <a href="/favoritos"><%= t('nav.favorites') %></a>
+            <a href="/cuenta/tickets"><%= t('account.tickets') %></a>
+            <% if (currentUser.role === 'admin') { %><a href="/admin"><%= t('nav.admin') %></a><% } %>
+            <form method="post" action="/logout"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit"><%= t('nav.logout') %></button></form>
           </div>
         </div>
       <% } else { %>
-        <a class="btn btn--ghost btn--sm" href="/login">Ingresar</a>
-        <a class="btn btn--primary btn--sm" href="/registro">Crear cuenta</a>
+        <a class="btn btn--ghost btn--sm" href="/login"><%= t('nav.login') %></a>
+        <a class="btn btn--primary btn--sm" href="/registro"><%= t('nav.register') %></a>
       <% } %>
       <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-mobile" data-nav-toggle><span class="sr-only">Menú</span><span class="nav__burger" aria-hidden="true"></span></button>
     </div>
@@ -55,15 +60,18 @@
   <div class="nav__mobile" id="nav-mobile" hidden>
     <form class="nav__search nav__search--mobile" action="/tienda" method="get"><button type="submit" aria-label="Buscar"><%- include('icons', { icon: 'search' }) %></button><input type="search" name="q" placeholder="Buscar…" aria-label="Buscar"></form>
     <button type="button" class="nav__mobile-theme" data-theme-toggle><span class="icon-btn theme-toggle"><%- include('icons', { icon: 'sun' }) %><%- include('icons', { icon: 'moon' }) %></span> Cambiar a modo <span data-theme-label>oscuro</span></button>
-    <a href="/">Inicio</a>
-    <a href="/tienda">Tienda</a>
+    <a href="/"><%= t('nav.home') %></a>
+    <a href="/tienda"><%= t('nav.shop') %></a>
     <% navCategories.forEach(function (c) { %><a class="nav__mobile-sub" href="/tienda/categoria/<%= c.slug %>"><%= c.name %></a><% }) %>
-    <a href="/nuevos">Nuevos lanzamientos</a>
-    <a href="/actualizaciones">Actualizaciones</a>
-    <a href="/membresia">Membresía</a>
-    <a href="/favoritos">Favoritos</a>
-    <a href="/nosotros">Nosotros</a>
-    <a href="/contacto">Contacto</a>
+    <a href="/paquetes"><%= t('nav.bundles') %></a>
+    <a href="/nuevos"><%= t('nav.new') %></a>
+    <a href="/actualizaciones"><%= t('nav.updates') %></a>
+    <a href="/membresia"><%= t('nav.membership') %></a>
+    <a href="/blog"><%= t('nav.blog') %></a>
+    <a href="/favoritos"><%= t('nav.favorites') %></a>
+    <a href="/nosotros"><%= t('nav.about') %></a>
+    <a href="/contacto"><%= t('nav.contact') %></a>
+    <a href="?lang=<%= otherLocale %>"><%= t('common.language') %>: <%= otherLocale === 'en' ? t('common.english') : t('common.spanish') %></a>
     <% if (currentUser) { %>
       <a href="/cuenta">Mi cuenta</a>
       <% if (currentUser.role === 'admin') { %><a href="/admin">Panel de administración</a><% } %>
@@ -74,5 +82,5 @@
     <% } %>
   </div>
 </header>
-<main id="main">
+<main id="main" tabindex="-1">
 <%- include('flash') %>

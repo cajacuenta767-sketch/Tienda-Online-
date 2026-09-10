@@ -29,6 +29,13 @@ function formData(body) {
     is_new: Boolean(body.is_new),
     is_active: Boolean(body.is_active),
     tags: v.str(body.tags, 500),
+    video_url: v.str(body.video_url, 300) || null,
+    faq: v.str(body.faq, 10000),
+    package_contents: v.str(body.package_contents, 5000),
+    title_en: v.str(body.title_en, 160) || null,
+    short_description_en: v.str(body.short_description_en, 300) || null,
+    long_description_en: v.str(body.long_description_en, 20000) || null,
+    features_en: v.str(body.features_en, 5000) || null,
   };
 }
 function validate(data) {
@@ -36,17 +43,19 @@ function validate(data) {
   v.required(data.title, 'El título', errors);
   if (data.price_cents === null || data.price_cents === undefined) errors.push('El precio no es válido.');
   v.url(data.demo_url, errors, 'La URL de la demo');
+  v.url(data.video_url, errors, 'La URL del vídeo');
   return errors;
 }
 function cleanupUploaded(files) {
   for (const f of [...((files && files.images) || []), ...((files && files.zip) || [])]) uploads.removeFile(f.path);
 }
-function attachFiles(product, files, req) {
+async function attachFiles(product, files, req) {
   const imgs = (files && files.images) || [];
   const warn = uploads.validateImages(imgs);
   if (warn) req.flash('error', warn);
   for (const f of imgs.filter((x) => x.size <= (require('../../config').MAX_IMAGE_MB * 1024 * 1024))) {
-    images.add(product.id, `/uploads/${f.filename}`, product.title);
+    const webPath = await uploads.optimizeImage(f);
+    images.add(product.id, webPath, product.title);
   }
   const zip = files && files.zip && files.zip[0];
   if (zip) {
@@ -58,12 +67,27 @@ function attachFiles(product, files, req) {
 exports.index = (req, res) => {
   const page = Math.max(1, parseInt(req.query.page, 10) || 1);
   const q = v.str(req.query.q, 100);
-  res.render('admin/products/index', { title: 'Productos', result: products.adminList({ q, page }), q });
+  const archived = req.query.papelera === '1';
+  res.render('admin/products/index', { title: archived ? 'Papelera' : 'Productos', result: products.adminList({ q, page, archived }), q, archived });
+};
+exports.archive = (req, res, next) => {
+  const product = products.byId(Number(req.params.id));
+  if (!product) return next();
+  products.archive(product.id);
+  req.flash('success', `«${product.title}» enviado a la papelera. Puedes restaurarlo cuando quieras.`);
+  return res.redirect('/admin/productos');
+};
+exports.restore = (req, res, next) => {
+  const product = products.byId(Number(req.params.id));
+  if (!product) return next();
+  products.restore(product.id);
+  req.flash('success', `«${product.title}» restaurado.`);
+  return res.redirect('/admin/productos?papelera=1');
 };
 exports.newForm = (req, res) => {
   res.render('admin/products/form', { title: 'Nuevo producto', product: null, form: {}, categories: categories.all(), errors: [] });
 };
-exports.create = (req, res) => {
+exports.create = async (req, res) => {
   const data = formData(req.body);
   const errors = validate(data);
   if (errors.length) {
@@ -72,7 +96,7 @@ exports.create = (req, res) => {
   }
   const product = products.create(data);
   tags.setForProduct(product.id, data.tags);
-  attachFiles(product, req.files, req);
+  await attachFiles(product, req.files, req);
   req.flash('success', 'Producto creado.');
   return res.redirect(`/admin/productos/${product.id}/editar`);
 };
@@ -87,7 +111,7 @@ exports.editForm = (req, res, next) => {
     errors: [],
   });
 };
-exports.update = (req, res, next) => {
+exports.update = async (req, res, next) => {
   const existing = products.byId(Number(req.params.id), { withRelations: true });
   if (!existing) return next();
   const data = formData(req.body);
@@ -98,7 +122,7 @@ exports.update = (req, res, next) => {
   }
   const product = products.update(existing.id, data);
   tags.setForProduct(product.id, data.tags);
-  attachFiles(product, req.files, req);
+  await attachFiles(product, req.files, req);
   req.flash('success', 'Producto actualizado.');
   return res.redirect(`/admin/productos/${product.id}/editar`);
 };
@@ -134,9 +158,20 @@ exports.addChangelog = (req, res, next) => {
   if (!version || !notes) {
     req.flash('error', 'Versión y notas son obligatorias.');
   } else {
-    changelog.add(product.id, { version, notes, released_at });
+    const entry = changelog.add(product.id, { version, notes, released_at });
     if (req.body.update_version) products.setVersion(product.id, version);
-    req.flash('success', `Versión ${version} registrada.`);
+    let notified = 0;
+    if (req.body.notify) {
+      const emails = require('../../services/emails');
+      const seen = new Set();
+      for (const buyer of [...products.buyersOf(product.id), ...products.activeMembers()]) {
+        if (seen.has(buyer.id)) continue;
+        seen.add(buyer.id);
+        emails.newVersion({ user: buyer, product, entry }).catch(() => {});
+        notified += 1;
+      }
+    }
+    req.flash('success', `Versión ${version} registrada.${notified ? ` Avisamos a ${notified} cliente${notified === 1 ? '' : 's'}.` : ''}`);
   }
   res.redirect(`/admin/productos/${product.id}/editar`);
 };

@@ -1,0 +1,11 @@
+<%- include('../../partials/admin/head') %>
+<form class="admin-toolbar" method="get"><select class="select select--sm" name="status" data-auto-submit><option value="">Todos</option><option value="open" <%= status === 'open' ? 'selected' : '' %>>Abiertos</option><option value="answered" <%= status === 'answered' ? 'selected' : '' %>>Respondidos</option><option value="closed" <%= status === 'closed' ? 'selected' : '' %>>Cerrados</option></select><span class="mono text-muted"><%= result.total %> tickets</span></form>
+<div class="table-wrap"><table class="table table--compact">
+  <thead><tr><th>#</th><th>Asunto</th><th>Cliente</th><th>Producto</th><th>Mensajes</th><th>Actualizado</th><th>Estado</th><th></th></tr></thead>
+  <tbody>
+    <% result.rows.forEach(function (t) { %><tr><td class="mono"><%= t.id %></td><td><a href="/admin/tickets/<%= t.id %>"><strong><%= t.subject %></strong></a></td><td><%= t.user_name %><br><small class="text-muted"><%= t.user_email %></small></td><td><%= t.product_title || 'General' %></td><td class="mono"><%= t.message_count %></td><td><%= fmtDateTime(t.updated_at) %></td><td><span class="badge badge--status-<%= t.status === 'open' ? 'pending' : t.status === 'answered' ? 'paid' : 'cancelled' %>"><%= t.status %></span></td><td><a class="btn btn--secondary btn--sm" href="/admin/tickets/<%= t.id %>">Abrir</a></td></tr><% }) %>
+    <% if (!result.rows.length) { %><tr><td colspan="8" class="text-muted">Sin tickets.</td></tr><% } %>
+  </tbody>
+</table></div>
+<%- include('../../partials/pagination', { page: result.page, pages: result.pages, basePath: '/admin/tickets', query: { status } }) %>
+<%- include('../../partials/admin/footer') %>

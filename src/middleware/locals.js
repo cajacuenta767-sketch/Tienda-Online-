@@ -26,7 +26,7 @@ module.exports = function locals(req, res, next) {
   if (req.session && req.session.userId) {
     const user = users.findById(req.session.userId);
     if (user) {
-      res.locals.currentUser = { id: user.id, name: user.name, email: user.email, role: user.role };
+      res.locals.currentUser = { id: user.id, name: user.name, email: user.email, role: user.role, is_blocked: user.is_blocked, verified_at: user.verified_at, locale: user.locale };
     } else {
       delete req.session.userId;
     }
@@ -42,6 +42,7 @@ module.exports = function locals(req, res, next) {
     return html + '</span>';
   };
   res.locals.escapeHtml = escapeHtml;
+  res.locals.thumb = require('../services/uploads').thumbFor;
 
   res.locals.money = (cents, currency = 'USD') => formatCents(cents, currency);
   res.locals.pen = (cents) => (all.show_pen === '1' ? formatCents(convert(cents, all.pen_rate || 3.75), 'PEN') : '');

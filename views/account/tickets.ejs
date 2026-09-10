@@ -1,0 +1,28 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<section class="page-head"><div class="container page-head__row"><div><nav class="breadcrumbs" aria-label="Ruta"><a href="/cuenta">Mi cuenta</a><span>/</span><span aria-current="page">Soporte</span></nav><h1>Soporte</h1><p class="text-muted">Abre un ticket y te respondemos por aquí y por correo.</p></div></div></section>
+<section class="section section--tight">
+  <div class="container two-col">
+    <div class="stack">
+      <% if (tickets.length) { %>
+        <% tickets.forEach(function (t) { %>
+          <a class="ticket-row" href="/cuenta/tickets/<%= t.id %>">
+            <span class="badge badge--status-<%= t.status === 'open' ? 'pending' : t.status === 'answered' ? 'paid' : 'cancelled' %>"><%= t.status === 'open' ? 'Abierto' : t.status === 'answered' ? 'Respondido' : 'Cerrado' %></span>
+            <span class="ticket-row__body"><strong>#<%= t.id %> · <%= t.subject %></strong><small class="text-muted"><%= t.product_title ? t.product_title + ' · ' : '' %><%= t.message_count %> mensaje<%= t.message_count === 1 ? '' : 's' %> · <%= fmtDateTime(t.updated_at) %></small></span>
+          </a>
+        <% }) %>
+      <% } else { %>
+        <div class="empty-state"><p class="mono">// sin tickets</p><h2>No tienes tickets todavía</h2><p>Usa el formulario para escribirnos.</p></div>
+      <% } %>
+    </div>
+    <form class="form card-form" method="post" action="/cuenta/tickets">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <h2 class="h3">Nuevo ticket</h2>
+      <div class="field"><label class="label" for="tk-product">Producto (opcional)</label><select class="select" id="tk-product" name="product_id"><option value="">General</option><% owned.forEach(function (p) { %><option value="<%= p.id %>"><%= p.title %></option><% }) %></select></div>
+      <div class="field"><label class="label" for="tk-subject">Asunto</label><input class="input" id="tk-subject" name="subject" required maxlength="160"></div>
+      <div class="field"><label class="label" for="tk-body">Mensaje</label><textarea class="textarea" id="tk-body" name="body" rows="6" required minlength="10" placeholder="Cuéntanos qué ocurre, en qué servidor lo instalaste y qué mensaje ves."></textarea></div>
+      <div class="form__actions"><button class="btn btn--primary" type="submit">Enviar ticket</button></div>
+    </form>
+  </div>
+</section>
+<%- include('../partials/footer') %>

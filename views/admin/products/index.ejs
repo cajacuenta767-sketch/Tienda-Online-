@@ -1,7 +1,7 @@
 <%- include('../../partials/admin/head') %>
 <div class="admin-toolbar">
   <form method="get" class="cluster"><input class="input input--sm" type="search" name="q" placeholder="Buscar producto…" value="<%= q %>"><button class="btn btn--secondary btn--sm" type="submit">Buscar</button></form>
-  <a class="btn btn--primary" href="/admin/productos/nuevo">+ Nuevo producto</a>
+  <div class="cluster cluster--tight"><a class="btn btn--ghost btn--sm" href="/admin/productos<%= archived ? '' : '?papelera=1' %>"><%= archived ? '← Volver a productos' : '🗑 Papelera' %></a><a class="btn btn--primary" href="/admin/productos/nuevo">+ Nuevo producto</a></div>
 </div>
 <div class="table-wrap"><table class="table">
   <thead><tr><th></th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Versión</th><th>Archivo</th><th>Flags</th><th>Ventas</th><th></th></tr></thead>
@@ -14,10 +14,15 @@
         <td class="mono"><%= money(effectivePrice(p)) %><% if (discountPct(p)) { %> <small class="text-muted"><s><%= money(p.price_cents) %></s></small><% } %></td>
         <td><span class="badge badge--version">v<%= p.version %></span></td>
         <td><% if (p.file_name) { %><span class="text-mint">✔</span> <small class="text-muted"><%= Math.round((p.file_size || 0) / 1024) %> KB</small><% } else { %><span class="text-danger">sin ZIP</span><% } %></td>
-        <td class="cluster cluster--tight"><% if (!p.is_active) { %><span class="badge badge--status-cancelled">Inactivo</span><% } %><% if (p.is_featured) { %><span class="badge badge--sale">Destacado</span><% } %><% if (p.is_new) { %><span class="badge badge--new">Nuevo</span><% } %></td>
+        <td class="cluster cluster--tight"><% if (!p.is_active) { %><span class="badge badge--status-pending">Borrador</span><% } %><% if (p.is_featured) { %><span class="badge badge--sale">Destacado</span><% } %><% if (p.is_new) { %><span class="badge badge--new">Nuevo</span><% } %></td>
         <td class="mono"><%= p.sales_count %></td>
         <td class="cluster cluster--tight"><a class="btn btn--ghost btn--sm" href="/producto/<%= p.slug %>" target="_blank" rel="noopener">Ver</a><a class="btn btn--secondary btn--sm" href="/admin/productos/<%= p.id %>/editar">Editar</a>
-          <form method="post" action="/admin/productos/<%= p.id %>/eliminar" data-confirm="¿Eliminar «<%= p.title %>»? Se borrarán sus imágenes y su archivo."><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--danger btn--sm" type="submit">Eliminar</button></form></td>
+          <% if (archived) { %>
+          <form method="post" action="/admin/productos/<%= p.id %>/restaurar"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--success btn--sm" type="submit">Restaurar</button></form>
+          <form method="post" action="/admin/productos/<%= p.id %>/eliminar" data-confirm="¿Eliminar definitivamente «<%= p.title %>»? Se borrarán sus imágenes y su archivo."><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--danger btn--sm" type="submit">Eliminar</button></form>
+          <% } else { %>
+          <form method="post" action="/admin/productos/<%= p.id %>/archivar" data-confirm="¿Enviar «<%= p.title %>» a la papelera? Dejará de verse en la tienda."><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--danger btn--sm" type="submit">Papelera</button></form>
+          <% } %></td>
       </tr>
     <% }) %>
     <% if (!result.rows.length) { %><tr><td colspan="9" class="text-muted">No hay productos. <a href="/admin/productos/nuevo">Crea el primero</a> o ejecuta <code>npm run seed</code>.</td></tr><% } %>

@@ -6,6 +6,10 @@ const plans = require('../models/plans');
 const memberships = require('../models/memberships');
 const cart = require('./cart');
 const coupons = require('../models/coupons');
+const bundles = require('../models/bundles');
+const licenses = require('../models/licenses');
+const users = require('../models/users');
+const emails = require('./emails');
 
 function resolveItems(req, { kind, ref }) {
   if (kind === 'product') {
@@ -17,6 +21,18 @@ function resolveItems(req, { kind, ref }) {
     const pl = plans.bySlug(ref);
     if (!pl || !pl.is_active) throw httpError(404, 'Plan no encontrado.');
     return [{ item_type: 'plan', plan_id: pl.id, title: `Membresía ${pl.name}`, unit_cents: pl.price_cents, quantity: 1, plan: pl }];
+  }
+  if (kind === 'bundle') {
+    const b = bundles.bySlug(ref);
+    if (!b || !b.is_active || !b.products.length) throw httpError(404, 'Paquete no encontrado.');
+    const regular = b.regular_cents || 1;
+    let assigned = 0;
+    return b.products.map((p, i) => {
+      const last = i === b.products.length - 1;
+      const share = last ? b.price_cents - assigned : Math.round(b.price_cents * products.effectivePrice(p) / regular);
+      assigned += share;
+      return { item_type: 'product', product_id: p.id, title: `${p.title} (paquete ${b.name})`, unit_cents: share, quantity: 1, product: p, bundle: b };
+    });
   }
   if (kind === 'cart') {
     const rows = cart.items(req);
@@ -43,6 +59,7 @@ function createFromSelection(req, userId, selection, providerId) {
     user_id: userId, provider: providerId, amount_cents: Math.max(0, subtotal - discount), currency: 'USD',
     coupon_code: applied ? applied.coupon.code : null, discount_cents: discount, subtotal_cents: subtotal,
   }, items);
+  if (items[0] && items[0].bundle) getDb().prepare('UPDATE orders SET bundle_id = ? WHERE id = ?').run(items[0].bundle.id, order.id);
   if (applied && req.session) delete req.session.coupon;
   return { order, items: ordersModel.items(order.id) };
 }
@@ -56,7 +73,10 @@ function markPaid(orderId, { provider_ref = null, provider_data = {} } = {}) {
     ordersModel.setStatus(orderId, 'paid', { provider_ref, provider_data });
     if (order.coupon_code) coupons.incrementUsed(order.coupon_code);
     for (const it of ordersModel.items(orderId)) {
-      if (it.item_type === 'product' && it.product_id) products.incrementSales(it.product_id, it.quantity || 1);
+      if (it.item_type === 'product' && it.product_id) {
+        products.incrementSales(it.product_id, it.quantity || 1);
+        if (order.user_id && !licenses.existsForOrderProduct(orderId, it.product_id)) licenses.create({ user_id: order.user_id, product_id: it.product_id, order_id: orderId });
+      }
       if (it.item_type === 'plan' && it.plan_id && order.user_id) {
         const plan = plans.byId(it.plan_id);
         memberships.create({ user_id: order.user_id, plan_id: it.plan_id, order_id: orderId, duration_days: plan ? plan.duration_days : null });
@@ -64,7 +84,12 @@ function markPaid(orderId, { provider_ref = null, provider_data = {} } = {}) {
     }
     return ordersModel.byId(orderId);
   });
-  return tx();
+  const paid = tx();
+  if (paid && paid.status === 'paid' && paid.user_id) {
+    const user = users.findById(paid.user_id);
+    if (user) emails.orderConfirmed({ user, order: paid, items: ordersModel.items(orderId), licenses: licenses.forOrder(orderId) }).catch(() => {});
+  }
+  return paid;
 }
 
 function cancel(orderId) {

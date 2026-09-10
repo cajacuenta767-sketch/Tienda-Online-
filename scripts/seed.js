@@ -16,6 +16,8 @@ const ordersService = require('../src/services/orders');
 const reviewsModel = require('../src/models/reviews');
 const couponsModel = require('../src/models/coupons');
 const favoritesModel = require('../src/models/favorites');
+const bundlesModel = require('../src/models/bundles');
+const postsModel = require('../src/models/posts');
 const { bootstrap } = require('../src/services/bootstrap');
 const { screenshot } = require('./lib/svg');
 const { createZip } = require('./lib/minizip');
@@ -149,6 +151,13 @@ const REVIEWS = [
   { slug: 'adminkit-plantilla-panel', who: 2, rating: 4, title: 'Plantilla limpia', body: 'Componentes bien pensados y modo oscuro incluido. Conecté mi API en una tarde.' },
 ];
 
+const BUNDLES = [
+  { name: 'Negocio completo', slug: 'negocio-completo', description: 'Punto de venta + facturación electrónica: vende, factura y cobra desde el primer día.', price_cents: 15900, is_active: 1, products: ['sistema-inventario-ventas', 'facturafacil-facturacion-electronica'] },
+  { name: 'Atención por WhatsApp', slug: 'atencion-whatsapp', description: 'Reservas online y bot de pedidos para atender a tus clientes sin estar al teléfono.', price_cents: 12900, is_active: 1, products: ['reservapro-citas-y-reservas', 'bot-whatsapp-pedidos'] },
+];
+
+const POSTS = require('./data/posts.json');
+
 const PLANS = [
   { name: 'Mensual', slug: 'mensual', description: 'Acceso a todos los sistemas durante 30 días.', features: 'Descarga ilimitada de todos los productos\nActualizaciones durante la membresía\nSoporte por WhatsApp', price_cents: 1900, duration_days: 30, is_active: 1, is_featured: 0, sort_order: 1 },
   { name: 'Anual', slug: 'anual', description: 'Un año completo de acceso con el mejor precio por mes.', features: 'Todo lo del plan Mensual\nAhorra más del 55 % frente al mensual\nAcceso anticipado a nuevos lanzamientos\nSoporte prioritario', price_cents: 9900, duration_days: 365, is_active: 1, is_featured: 1, sort_order: 2 },
@@ -188,7 +197,7 @@ function fresh(db) {
   if (config.IS_PROD && !config.SEED_ALLOW_FRESH) throw new Error('En producción, --fresh requiere SEED_ALLOW_FRESH=true.');
   db.exec(`DELETE FROM downloads; DELETE FROM memberships; DELETE FROM order_items; DELETE FROM orders; DELETE FROM changelog;
     DELETE FROM product_tags; DELETE FROM tags; DELETE FROM product_images; DELETE FROM products; DELETE FROM categories; DELETE FROM plans;
-    DELETE FROM reviews; DELETE FROM favorites; DELETE FROM coupons; DELETE FROM contact_messages; DELETE FROM sessions; DELETE FROM users; DELETE FROM settings; DELETE FROM sqlite_sequence;`);
+    DELETE FROM licenses; DELETE FROM tokens; DELETE FROM emails; DELETE FROM ticket_messages; DELETE FROM tickets; DELETE FROM posts; DELETE FROM bundle_products; DELETE FROM bundles; DELETE FROM carts; DELETE FROM product_views; DELETE FROM reviews; DELETE FROM favorites; DELETE FROM coupons; DELETE FROM contact_messages; DELETE FROM sessions; DELETE FROM users; DELETE FROM settings; DELETE FROM sqlite_sequence;`);
 }
 
 function seed({ db = getDb(), minimal = false, freshRun = false } = {}) {
@@ -224,6 +233,11 @@ function seed({ db = getDb(), minimal = false, freshRun = false } = {}) {
     ordersService.markPaid(order.id, { provider_data: { seeded: true } });
   }
   for (const c of COUPONS) couponsModel.upsertByCode(c);
+  for (const b of BUNDLES) {
+    const ids = b.products.map((slug) => productsModel.bySlug(slug, { withRelations: false })).filter(Boolean).map((p) => p.id);
+    if (ids.length >= 2) bundlesModel.upsertBySlug({ name: b.name, slug: b.slug, description: b.description, price_cents: b.price_cents, is_active: b.is_active }, ids);
+  }
+  for (const p of POSTS) postsModel.upsertBySlug(p);
   const reviewers = REVIEWERS.map((r) => usersModel.findByEmail(r.email) || usersModel.create({ name: r.name, email: r.email, password: 'cliente12345' }));
   for (const rv of REVIEWS) {
     const product = productsModel.bySlug(rv.slug, { withRelations: false });
@@ -244,8 +258,8 @@ function seed({ db = getDb(), minimal = false, freshRun = false } = {}) {
 if (require.main === module) {
   const freshRun = process.argv.includes('--fresh');
   const result = seed({ freshRun });
-  console.log(`Seed completado: ${result.categories} categorías, ${result.products} productos, ${result.plans} planes, ${COUPONS.length} cupones, ${REVIEWS.length} reseñas.`);
+  console.log(`Seed completado: ${result.categories} categorías, ${result.products} productos, ${result.plans} planes, ${COUPONS.length} cupones, ${REVIEWS.length} reseñas, ${BUNDLES.length} paquetes, ${POSTS.length} entradas de blog.`);
   console.log(`Admin: ${config.ADMIN_EMAIL || '(define ADMIN_EMAIL en .env)'} · Cliente demo: demo@devmarket.local / demo12345`);
 }
 
-module.exports = { seed, PRODUCTS, PLANS, CATEGORIES, COUPONS, REVIEWS };
+module.exports = { seed, PRODUCTS, PLANS, CATEGORIES, COUPONS, REVIEWS, BUNDLES, POSTS };

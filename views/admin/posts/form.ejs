@@ -1,0 +1,25 @@
+<%- include('../../partials/admin/head') %>
+<% if (errors.length) { %><div class="alert alert--error"><ul><% errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul></div><% } %>
+<form class="form admin-form" method="post" action="<%= post ? `/admin/blog/${post.id}/editar` : '/admin/blog/nuevo' %>" enctype="multipart/form-data">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div class="admin-form__grid">
+    <section class="admin-block">
+      <div class="form-grid">
+        <div class="field field--span"><label class="label" for="po-title">Título</label><input class="input" id="po-title" name="title" required value="<%= form.title || '' %>" data-slug-source></div>
+        <div class="field"><label class="label" for="po-slug">Slug</label><input class="input mono" id="po-slug" name="slug" value="<%= form.slug || '' %>" data-slug-target></div>
+        <div class="field"><label class="label" for="po-date">Fecha de publicación</label><input class="input" id="po-date" name="published_at" type="date" value="<%= form.published_at || '' %>"></div>
+        <div class="field field--span"><label class="label" for="po-excerpt">Resumen</label><input class="input" id="po-excerpt" name="excerpt" maxlength="400" value="<%= form.excerpt || '' %>"></div>
+        <div class="field field--span"><label class="label" for="po-body">Contenido</label><textarea class="textarea" id="po-body" name="body" rows="18"><%= form.body || '' %></textarea><span class="help">Separa párrafos con una línea en blanco. Los enlaces se escriben como texto plano.</span></div>
+      </div>
+    </section>
+    <aside class="stack">
+      <section class="admin-block">
+        <label class="checkbox"><input type="radio" name="status" value="draft" <%= form.status !== 'published' ? 'checked' : '' %>> Borrador</label>
+        <label class="checkbox"><input type="radio" name="status" value="published" <%= form.status === 'published' ? 'checked' : '' %>> Publicado</label>
+        <div class="field mt-2"><label class="label" for="po-cover">Portada</label><% if (post && post.cover_path) { %><img src="<%= post.cover_path %>" alt="" class="thumb" width="240"><% } %><input class="file-input" id="po-cover" name="images" type="file" accept="image/png,image/jpeg,image/webp"></div>
+      </section>
+      <div class="form__actions"><button class="btn btn--primary btn--block btn--lg" type="submit"><%= post ? 'Guardar' : 'Crear entrada' %></button><a class="btn btn--ghost btn--block" href="/admin/blog">Volver</a></div>
+    </aside>
+  </div>
+</form>
+<%- include('../../partials/admin/footer') %>

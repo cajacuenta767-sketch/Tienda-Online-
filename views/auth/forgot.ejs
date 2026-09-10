@@ -1,0 +1,16 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<section class="section auth-section">
+  <div class="container">
+    <form class="form auth-card" method="post" action="/recuperar" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <p class="eyebrow">Recuperar acceso</p>
+      <h1>¿Olvidaste tu contraseña?</h1>
+      <p class="text-muted">Escribe tu correo y te enviaremos un enlace para crear una nueva. El enlace vale una hora.</p>
+      <div class="field"><label class="label" for="f-email">Correo</label><input class="input" id="f-email" name="email" type="email" autocomplete="email" required></div>
+      <button class="btn btn--primary btn--block btn--lg" type="submit">Enviar enlace</button>
+      <p class="text-muted auth-card__alt"><a href="/login">Volver a iniciar sesión</a></p>
+    </form>
+  </div>
+</section>
+<%- include('../partials/footer') %>

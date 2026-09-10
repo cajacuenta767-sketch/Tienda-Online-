@@ -1,0 +1,8 @@
+<%- include('../../partials/admin/head') %>
+<section class="admin-block">
+  <div class="section__head"><div><h2><%= email.subject %></h2><p class="text-muted">Para <%= email.to_email %> · <%= fmtDateTime(email.created_at) %> · <span class="mono"><%= email.kind %></span></p></div><span class="badge badge--status-<%= email.status === 'sent' ? 'paid' : email.status === 'failed' ? 'cancelled' : 'pending' %>"><%= email.status %></span></div>
+  <iframe class="email-preview" srcdoc="<%= email.body_html %>" title="Vista previa del correo" sandbox=""></iframe>
+  <details class="mt-2"><summary class="text-muted">Texto plano</summary><pre class="code-block"><%= email.body_text %></pre></details>
+  <a class="btn btn--ghost mt-3" href="/admin/correos">Volver</a>
+</section>
+<%- include('../../partials/admin/footer') %>

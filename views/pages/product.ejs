@@ -1,4 +1,4 @@
-<%- include('../partials/head', { metaDescription: product.short_description }) %>
+<%- include('../partials/head') %>
 <%- include('../partials/header') %>
 <% const pct = discountPct(product); const main = product.images[0]; %>
 <section class="page-head page-head--compact">
@@ -31,9 +31,9 @@
         </div>
         <%- include('../partials/fav-button', { product, size: 'lg' }) %>
       </div>
-      <h1 class="buy-box__title"><%= product.title %></h1>
+      <h1 class="buy-box__title"><%= tr(product, 'title') %></h1>
       <a class="rating" href="#resenas"><%- stars(reviewSummary.avg) %> <% if (reviewSummary.count) { %><strong><%= Number(reviewSummary.avg).toFixed(1) %></strong> · <%= reviewSummary.count %> reseña<%= reviewSummary.count === 1 ? '' : 's' %><% } else { %><span>Sé el primero en opinar</span><% } %></a>
-      <p class="buy-box__desc"><%= product.short_description %></p>
+      <p class="buy-box__desc"><%= tr(product, 'short_description') %></p>
       <div class="buy-box__price"><%- include('../partials/price', { product, size: 'lg' }) %></div>
       <div class="buy-box__actions">
         <% if (canDownload) { %>
@@ -56,6 +56,15 @@
         <li><span>Ventas</span><strong class="mono"><%= product.sales_count %></strong></li>
         <li><span>Favoritos</span><strong class="mono"><%= product.favorites_count %></strong></li>
       </ul>
+      <% if (bundles.length) { %>
+        <% bundles.forEach(function (b) { %>
+        <a class="bundle-hint" href="/paquetes/<%= b.slug %>">
+          <span class="badge badge--sale">-<%= b.savings_pct %>%</span>
+          <span><strong><%= t('product.bundle') %> «<%= b.name %>»</strong><small><%= b.products.map((p) => p.title).join(' + ') %> por <%= money(b.price_cents) %></small></span>
+        </a>
+        <% }) %>
+      <% } %>
+      <a class="btn btn--ghost btn--sm" href="/comparar?p=<%= product.slug %>">⇄ <%= t('product.compare') %></a>
       <% if (product.tags.length) { %>
       <div class="cluster buy-box__tags">
         <% product.tags.forEach(function (t) { %><a class="tag-chip tag-chip--sm" href="/etiqueta/<%= t.slug %>">#<%= t.name %></a><% }) %>
@@ -68,14 +77,34 @@
 <section class="section section--tight">
   <div class="container product-details">
     <div class="product-details__main">
+      <% if (videoEmbed) { %>
       <article class="detail-block">
-        <h2>Descripción</h2>
-        <div class="prose"><%- nl2paragraphs(product.long_description) %></div>
+        <h2><%= t('product.video') %></h2>
+        <div class="video-frame"><iframe src="<%= videoEmbed %>" title="<%= t('product.video') %>: <%= product.title %>" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+      </article>
+      <% } %>
+      <article class="detail-block">
+        <h2><%= t('product.description') %></h2>
+        <div class="prose"><%- nl2paragraphs(tr(product, 'long_description')) %></div>
       </article>
       <% if (product.features) { %>
       <article class="detail-block">
-        <h2>Características</h2>
-        <%- nl2list(product.features) %>
+        <h2><%= t('product.features') %></h2>
+        <%- nl2list(tr(product, 'features')) %>
+      </article>
+      <% } %>
+      <% if (product.package_contents) { %>
+      <article class="detail-block">
+        <h2><%= t('product.package') %></h2>
+        <pre class="tree"><%= product.package_contents %></pre>
+      </article>
+      <% } %>
+      <% if (faq.length) { %>
+      <article class="detail-block" id="faq">
+        <h2><%= t('product.faq') %></h2>
+        <div class="faq">
+          <% faq.forEach(function (f) { %><details><summary><%= f.q %></summary><p><%= f.a %></p></details><% }) %>
+        </div>
       </article>
       <% } %>
       <% if (product.changelog.length) { %>

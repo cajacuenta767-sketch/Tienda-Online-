@@ -40,4 +40,12 @@ function count() {
   return getDb().prepare('SELECT COUNT(*) AS c FROM users').get().c;
 }
 
-module.exports = { findByEmail, findById, create, verifyPassword, updatePassword, updateRole, list, countAdmins, count };
+function setVerified(id) { getDb().prepare("UPDATE users SET verified_at = datetime('now'), updated_at = datetime('now') WHERE id = ?").run(id); }
+function setBlocked(id, blocked) { getDb().prepare("UPDATE users SET is_blocked = ?, updated_at = datetime('now') WHERE id = ?").run(blocked ? 1 : 0, id); }
+function setLocale(id, locale) { getDb().prepare('UPDATE users SET locale = ? WHERE id = ?').run(locale === 'en' ? 'en' : 'es', id); }
+function updateProfile(id, { name }) { getDb().prepare("UPDATE users SET name = ?, updated_at = datetime('now') WHERE id = ?").run(name, id); }
+function newByMonth() {
+  return getDb().prepare("SELECT strftime('%Y-%m', created_at) AS month, COUNT(*) AS users FROM users WHERE created_at >= date('now', '-11 months', 'start of month') GROUP BY month ORDER BY month").all();
+}
+
+module.exports = { findByEmail, findById, create, verifyPassword, updatePassword, updateRole, list, countAdmins, count, setVerified, setBlocked, setLocale, updateProfile, newByMonth };

@@ -1,0 +1,16 @@
+<%- include('../../partials/admin/head') %>
+<% if (!configured) { %><div class="alert alert--info"><span><strong>SMTP no configurado.</strong> Los correos se guardan aquí para que puedas verlos. Para enviarlos de verdad añade al <code>.env</code>: <code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_USER</code>, <code>SMTP_PASS</code> y <code>MAIL_FROM</code> (por ejemplo Gmail con contraseña de aplicación, Brevo, Mailgun o Resend).</span></div><% } %>
+<form class="admin-toolbar" method="get">
+  <select class="select select--sm" name="status" data-auto-submit><option value="">Todos</option><option value="outbox" <%= status === 'outbox' ? 'selected' : '' %>>Bandeja interna</option><option value="queued" <%= status === 'queued' ? 'selected' : '' %>>En cola</option><option value="sent" <%= status === 'sent' ? 'selected' : '' %>>Enviados</option><option value="failed" <%= status === 'failed' ? 'selected' : '' %>>Fallidos</option></select>
+  <span class="mono text-muted"><%= result.total %> correos</span>
+</form>
+<div class="table-wrap"><table class="table table--compact">
+  <thead><tr><th>Fecha</th><th>Para</th><th>Asunto</th><th>Tipo</th><th>Estado</th><th></th></tr></thead>
+  <tbody>
+    <% result.rows.forEach(function (e) { %><tr><td><%= fmtDateTime(e.created_at) %></td><td><%= e.to_email %></td><td><a href="/admin/correos/<%= e.id %>"><%= e.subject %></a></td><td class="mono"><%= e.kind %></td><td><span class="badge badge--status-<%= e.status === 'sent' ? 'paid' : e.status === 'failed' ? 'cancelled' : 'pending' %>"><%= { sent: 'Enviado', failed: 'Fallido', queued: 'En cola', outbox: 'Bandeja' }[e.status] %></span><% if (e.error) { %><br><small class="text-danger"><%= e.error %></small><% } %></td>
+      <td class="cluster cluster--tight"><a class="btn btn--ghost btn--sm" href="/admin/correos/<%= e.id %>">Ver</a><% if (configured && e.status !== 'sent') { %><form method="post" action="/admin/correos/<%= e.id %>/reenviar"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--secondary btn--sm" type="submit">Enviar</button></form><% } %></td></tr><% }) %>
+    <% if (!result.rows.length) { %><tr><td colspan="6" class="text-muted">Sin correos.</td></tr><% } %>
+  </tbody>
+</table></div>
+<%- include('../../partials/pagination', { page: result.page, pages: result.pages, basePath: '/admin/correos', query: { status } }) %>
+<%- include('../../partials/admin/footer') %>

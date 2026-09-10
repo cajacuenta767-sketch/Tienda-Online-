@@ -1,0 +1,11 @@
+<%- include('../../partials/admin/head') %>
+<div class="admin-toolbar"><span class="text-muted">Guías y tutoriales que atraen visitas desde Google y ayudan a tus clientes.</span><a class="btn btn--primary" href="/admin/blog/nuevo">+ Nueva entrada</a></div>
+<div class="table-wrap"><table class="table">
+  <thead><tr><th>Título</th><th>Estado</th><th>Publicado</th><th>Actualizado</th><th></th></tr></thead>
+  <tbody>
+    <% posts.forEach(function (p) { %><tr><td><a href="/admin/blog/<%= p.id %>/editar"><strong><%= p.title %></strong></a><br><small class="mono text-muted">/blog/<%= p.slug %></small></td><td><span class="badge badge--status-<%= p.status === 'published' ? 'paid' : 'pending' %>"><%= p.status === 'published' ? 'Publicado' : 'Borrador' %></span></td><td class="mono"><%= p.published_at || '—' %></td><td><%= fmtDateTime(p.updated_at) %></td>
+      <td class="cluster cluster--tight"><a class="btn btn--ghost btn--sm" href="/blog/<%= p.slug %>" target="_blank" rel="noopener">Ver</a><a class="btn btn--secondary btn--sm" href="/admin/blog/<%= p.id %>/editar">Editar</a><form method="post" action="/admin/blog/<%= p.id %>/eliminar" data-confirm="¿Eliminar «<%= p.title %>»?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--danger btn--sm" type="submit">✕</button></form></td></tr><% }) %>
+    <% if (!posts.length) { %><tr><td colspan="5" class="text-muted">Sin entradas.</td></tr><% } %>
+  </tbody>
+</table></div>
+<%- include('../../partials/admin/footer') %>

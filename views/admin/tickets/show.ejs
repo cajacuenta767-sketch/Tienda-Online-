@@ -1,0 +1,25 @@
+<%- include('../../partials/admin/head') %>
+<div class="admin-form__grid">
+  <section class="admin-block">
+    <div class="section__head"><div><h2>#<%= ticket.id %> · <%= ticket.subject %></h2><p class="text-muted"><a href="/admin/usuarios/<%= ticket.user_id %>"><%= ticket.user_name %></a> · <%= ticket.user_email %><%= ticket.product_title ? ' · ' + ticket.product_title : '' %></p></div><span class="badge badge--lg badge--status-<%= ticket.status === 'open' ? 'pending' : ticket.status === 'answered' ? 'paid' : 'cancelled' %>"><%= ticket.status %></span></div>
+    <div class="thread">
+      <% messages.forEach(function (m) { %><div class="msg <%= m.is_admin ? 'msg--admin' : '' %>"><div class="msg__head"><strong><%= m.is_admin ? 'Soporte (' + (m.user_name || 'admin') + ')' : m.user_name %></strong><time class="mono text-muted"><%= fmtDateTime(m.created_at) %></time></div><div class="msg__body"><%- nl2paragraphs(m.body) %></div></div><% }) %>
+    </div>
+    <form class="form mt-4" method="post" action="/admin/tickets/<%= ticket.id %>/responder">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field"><label class="label" for="ad-body">Responder (se envía por correo al cliente)</label><textarea class="textarea" id="ad-body" name="body" rows="5" required></textarea></div>
+      <label class="checkbox"><input type="checkbox" name="close" value="1"> Cerrar el ticket tras responder</label>
+      <div class="form__actions"><button class="btn btn--primary" type="submit">Enviar respuesta</button></div>
+    </form>
+  </section>
+  <aside class="stack">
+    <section class="admin-block"><h2>Estado</h2>
+      <form method="post" action="/admin/tickets/<%= ticket.id %>/estado" class="stack"><input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button class="btn btn--secondary btn--block" name="status" value="open" type="submit">Marcar abierto</button>
+        <button class="btn btn--secondary btn--block" name="status" value="answered" type="submit">Marcar respondido</button>
+        <button class="btn btn--danger btn--block" name="status" value="closed" type="submit">Cerrar</button></form>
+    </section>
+    <a class="btn btn--ghost btn--block" href="/admin/tickets">Volver</a>
+  </aside>
+</div>
+<%- include('../../partials/admin/footer') %>

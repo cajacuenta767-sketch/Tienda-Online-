@@ -37,7 +37,7 @@ test('el admin sube un producto con dos imágenes y un ZIP, y el cliente con mem
   const products = require('../src/models/products');
   const p = products.byId(id, { withRelations: true });
   assert.equal(p.images.length, 2);
-  assert.ok(p.images.every((i) => i.path.startsWith('/uploads/') && i.path.endsWith('.png')));
+  assert.ok(p.images.every((i) => i.path.startsWith('/uploads/') && /\.(png|webp)$/.test(i.path)), 'las imágenes se guardan en /uploads (WebP si sharp está disponible)');
   assert.ok(fs.existsSync(path.join(process.env.UPLOADS_DIR, path.basename(p.images[0].path))));
   assert.ok(fs.existsSync(path.join(process.env.STORAGE_DIR, p.file_name)));
   assert.notEqual(p.file_name, 'subida-real.zip', 'el nombre en disco debe ser aleatorio');
@@ -47,7 +47,7 @@ test('el admin sube un producto con dos imágenes y un ZIP, y el cliente con mem
   assert.match(pub.text, new RegExp(p.images[0].path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   const img = await request(app).get(p.images[0].path);
   assert.equal(img.status, 200);
-  assert.match(img.headers['content-type'], /image\/png/);
+  assert.match(img.headers['content-type'], /image\/(png|webp)/);
 
   const del = await a.post(`/admin/productos/${id}/imagenes/${p.images[1].id}/eliminar`, {}, { csrfFrom: editUrl });
   assert.equal(del.status, 302);

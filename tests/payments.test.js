@@ -76,7 +76,10 @@ test('flujo BTC completo: pedido → QR → "ya pagué" → admin confirma → d
   assert.equal(paid.status, 302);
   assert.match((await a.get(`/admin/pedidos/${orderId}`)).text, /badge--status-paid/);
 
-  const dl = await s.get('/descargar/1');
+  const go = await s.get('/descargar/1');
+  assert.equal(go.status, 302);
+  assert.match(go.headers.location, /^\/d\//);
+  const dl = await s.get(go.headers.location);
   assert.equal(dl.status, 200);
   assert.match(dl.headers['content-type'], /zip/);
   assert.match(dl.headers['content-disposition'], /sistema-inventario-ventas-v3\.2\.0\.zip/);
@@ -92,7 +95,9 @@ test('membresía pagada da acceso a todo el catálogo', async () => {
   await a.post(`/admin/pedidos/${orderId}/marcar-pagado`, {}, { csrfFrom: `/admin/pedidos/${orderId}` });
   const cuenta = await s.get('/cuenta?tab=membresia');
   assert.match(cuenta.text, /Plan Mensual/);
-  const dl = await s.get('/descargar/2');
+  const go2 = await s.get('/descargar/2');
+  assert.equal(go2.status, 302);
+  const dl = await s.get(go2.headers.location);
   assert.equal(dl.status, 200);
   assert.match(dl.headers['content-type'], /zip/);
 });

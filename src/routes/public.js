@@ -9,6 +9,11 @@ const favorites = require('../controllers/favorites');
 const reviews = require('../controllers/reviews');
 const api = require('../controllers/api');
 const { requireLogin } = require('../middleware/auth');
+const seo = require('../controllers/seo');
+const blog = require('../controllers/blog');
+const bundlesCtl = require('../controllers/bundles');
+const compare = require('../controllers/compare');
+const licensesCtl = require('../controllers/licenses');
 
 const r = Router();
 r.get('/', home.index);
@@ -28,6 +33,15 @@ r.get('/favoritos', favorites.index);
 r.post('/favoritos/:productId', csrf.verify, favorites.toggle);
 r.post('/producto/:slug/resenas', requireLogin, csrf.verify, reviews.create);
 r.get('/api/buscar', api.search);
+r.get('/blog', blog.index);
+r.get('/blog/:slug', blog.show);
+r.get('/paquetes', bundlesCtl.index);
+r.get('/paquetes/:slug', bundlesCtl.show);
+r.get('/comparar', compare.index);
+r.get('/sitemap.xml', seo.sitemap);
+r.get('/robots.txt', seo.robots);
+r.post('/api/licencias/validar', licensesCtl.validate);
+r.get('/api/licencias/validar', licensesCtl.validate);
 r.get('/health', (req, res) => res.json({ ok: true }));
 
 module.exports = r;

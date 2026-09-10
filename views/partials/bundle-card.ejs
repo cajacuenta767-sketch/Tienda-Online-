@@ -1,0 +1,14 @@
+<article class="bundle-card">
+  <div class="bundle-card__imgs">
+    <% bundle.products.slice(0, 3).forEach(function (p) { %><img src="<%= thumb(p.image || '/img/placeholder.svg') %>" alt="" loading="lazy"><% }) %>
+  </div>
+  <div class="bundle-card__body">
+    <div class="cluster cluster--tight"><span class="badge badge--sale">-<%= bundle.savings_pct %>%</span><span class="badge badge--cat"><%= bundle.products.length %> productos</span></div>
+    <h3><a href="/paquetes/<%= bundle.slug %>"><%= bundle.name %></a></h3>
+    <p class="text-muted truncate-2"><%= bundle.description || bundle.products.map((p) => p.title).join(' + ') %></p>
+    <div class="product-card__footer">
+      <span class="price"><span class="price__current"><%= money(bundle.price_cents) %></span><span class="price__old"><%= money(bundle.regular_cents) %></span></span>
+      <a class="btn btn--primary btn--sm" href="/pagar?paquete=<%= bundle.slug %>"><%= t('card.buy') %></a>
+    </div>
+  </div>
+</article>

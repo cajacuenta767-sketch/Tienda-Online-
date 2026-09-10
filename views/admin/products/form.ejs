@@ -16,15 +16,27 @@
           <div class="field"><label class="label" for="f-features">Características</label><textarea class="textarea" id="f-features" name="features" rows="7" placeholder="Una por línea"><%= form.features || '' %></textarea></div>
           <div class="field"><label class="label" for="f-req">Requisitos / Stack</label><textarea class="textarea" id="f-req" name="requirements" rows="7" placeholder="Una por línea"><%= form.requirements || '' %></textarea></div>
           <div class="field field--span"><label class="label" for="f-tags">Etiquetas</label><input class="input" id="f-tags" name="tags" value="<%= form.tags || '' %>" placeholder="PHP, Laravel, POS (separadas por coma)"></div>
+          <div class="field field--span"><label class="label" for="f-package">Qué incluye el ZIP</label><textarea class="textarea mono" id="f-package" name="package_contents" rows="6" placeholder="app/&#10;├── config/&#10;├── src/&#10;└── README.md"><%= form.package_contents || '' %></textarea><span class="help">Árbol de carpetas o lista de archivos. Se muestra tal cual, en fuente monoespaciada.</span></div>
+          <div class="field field--span"><label class="label" for="f-faq">Preguntas frecuentes</label><textarea class="textarea" id="f-faq" name="faq" rows="6" placeholder="P: ¿Funciona en hosting compartido?&#10;R: Sí, solo necesitas PHP 8 y MySQL.&#10;P: ¿Incluye instalador?&#10;R: Sí, en 3 pasos."><%= form.faq || '' %></textarea><span class="help">Escribe cada pregunta con «P:» y su respuesta con «R:».</span></div>
+        </div>
+      </section>
+      <section class="admin-block">
+        <h2>Versión en inglés <span class="badge badge--cat">opcional</span></h2>
+        <p class="help">Si se rellenan, los visitantes que elijan English verán estos textos. Si no, se muestra el español.</p>
+        <div class="form-grid">
+          <div class="field field--span"><label class="label" for="f-title-en">Title</label><input class="input" id="f-title-en" name="title_en" value="<%= form.title_en || '' %>"></div>
+          <div class="field field--span"><label class="label" for="f-short-en">Short description</label><input class="input" id="f-short-en" name="short_description_en" maxlength="300" value="<%= form.short_description_en || '' %>"></div>
+          <div class="field field--span"><label class="label" for="f-long-en">Long description</label><textarea class="textarea" id="f-long-en" name="long_description_en" rows="5"><%= form.long_description_en || '' %></textarea></div>
+          <div class="field field--span"><label class="label" for="f-feat-en">Features (one per line)</label><textarea class="textarea" id="f-feat-en" name="features_en" rows="4"><%= form.features_en || '' %></textarea></div>
         </div>
       </section>
       <section class="admin-block">
         <h2>Imágenes</h2>
         <% if (isEdit && product.images.length) { %>
           <form method="post" action="/admin/productos/<%= product.id %>/imagenes/ordenar" class="image-grid" id="reorder-form"><input type="hidden" name="_csrf" value="<%= csrfToken %>"></form>
-          <div class="image-grid">
+          <div class="image-grid" data-sortable>
             <% product.images.forEach(function (img, i) { %>
-              <div class="image-tile">
+              <div class="image-tile" draggable="true" data-image-id="<%= img.id %>">
                 <img src="<%= img.path %>" alt="">
                 <div class="image-tile__bar">
                   <label class="sr-only" for="ord-<%= img.id %>">Orden</label>
@@ -37,7 +49,15 @@
           <% product.images.forEach(function (img) { %><form id="del-img-<%= img.id %>" method="post" action="/admin/productos/<%= product.id %>/imagenes/<%= img.id %>/eliminar"><input type="hidden" name="_csrf" value="<%= csrfToken %>"></form><% }) %>
           <button class="btn btn--ghost btn--sm" type="button" data-reorder-submit>Guardar orden</button>
         <% } %>
-        <div class="field"><label class="label" for="f-images">Añadir imágenes</label><input class="file-input" id="f-images" name="images" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple><span class="help">PNG, JPG, WEBP o GIF. Hasta 10 por vez, máx. <%= config.MAX_IMAGE_MB || 5 %> MB cada una. Recomendado 1280×800.</span></div>
+        <div class="field">
+          <label class="label" for="f-images">Añadir imágenes</label>
+          <div class="dropzone" data-dropzone>
+            <input class="file-input" id="f-images" name="images" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple>
+            <p><strong>Arrastra las capturas aquí</strong> o haz clic para elegirlas</p>
+            <span class="help">PNG, JPG, WEBP o GIF · hasta 10 por vez · máx. <%= config.MAX_IMAGE_MB || 5 %> MB. Se convierten a WebP y se recortan a 16:10 automáticamente.</span>
+            <div class="dropzone__previews" data-dropzone-previews></div>
+          </div>
+        </div>
       </section>
       <% if (isEdit) { %>
       <section class="admin-block">
@@ -53,6 +73,7 @@
           <div class="field"><label class="label" for="cl-date">Fecha</label><input class="input" id="cl-date" form="changelog-form" name="released_at" type="date" value="<%= new Date().toISOString().slice(0, 10) %>"></div>
           <div class="field field--span"><label class="label" for="cl-notes">Notas (una por línea)</label><textarea class="textarea" id="cl-notes" form="changelog-form" name="notes" rows="3"></textarea></div>
           <label class="checkbox field--span"><input type="checkbox" form="changelog-form" name="update_version" value="1" checked> Actualizar la versión del producto a esta versión</label>
+          <label class="checkbox field--span"><input type="checkbox" form="changelog-form" name="notify" value="1" checked> Avisar por correo a quienes compraron el producto y a los miembros activos</label>
           <div class="field--span"><button class="btn btn--secondary" type="submit" form="changelog-form">Registrar versión</button></div>
         </div>
       </section>
@@ -71,6 +92,7 @@
         <label class="checkbox"><input type="checkbox" name="is_new" value="1" <%= form.is_new ? 'checked' : '' %>> Marcar como nuevo</label>
         <div class="field mt-2"><label class="label" for="f-version">Versión actual</label><input class="input mono" id="f-version" name="version" value="<%= form.version || '1.0.0' %>"></div>
         <div class="field"><label class="label" for="f-demo">URL de la demo</label><input class="input" id="f-demo" name="demo_url" type="url" value="<%= form.demo_url || '' %>" placeholder="https://demo.tudominio.com/…"></div>
+        <div class="field"><label class="label" for="f-video">Vídeo (YouTube o Vimeo)</label><input class="input" id="f-video" name="video_url" type="url" value="<%= form.video_url || '' %>" placeholder="https://www.youtube.com/watch?v=…"></div>
         <div class="field"><label class="label" for="f-license">Licencia</label><input class="input" id="f-license" name="license" value="<%= form.license || 'Licencia estándar: uso en 1 proyecto' %>"></div>
       </section>
       <section class="admin-block">

@@ -1,0 +1,21 @@
+<%- include('../../partials/admin/head') %>
+<form class="admin-toolbar" method="get"><div class="cluster"><input class="input input--sm" type="search" name="q" placeholder="Clave, correo o producto…" value="<%= q %>"><button class="btn btn--secondary btn--sm" type="submit">Buscar</button></div><span class="mono text-muted"><%= result.total %> licencias</span></form>
+<div class="alert alert--info"><span>Tus sistemas pueden validar una clave con <code>POST <%= baseUrl %>/api/licencias/validar</code> enviando <code>{ "key": "DM-…", "product": "slug", "domain": "cliente.com" }</code>. Responde <code>{ "valid": true }</code> y registra el dominio como activación.</span></div>
+<div class="table-wrap"><table class="table table--compact">
+  <thead><tr><th>Clave</th><th>Cliente</th><th>Producto</th><th>Activaciones</th><th>Última validación</th><th>Estado</th><th></th></tr></thead>
+  <tbody>
+    <% result.rows.forEach(function (l) { %><tr>
+      <td class="mono"><%= l.key %></td><td><%= l.user_email || '—' %></td><td><%= l.product_title || '—' %></td>
+      <td><span class="mono"><%= l.activationsList.length %>/<%= l.max_activations %></span><% if (l.activationsList.length) { %><br><small class="text-muted"><%= l.activationsList.join(', ') %></small><% } %></td>
+      <td><%= l.last_validated_at ? fmtDateTime(l.last_validated_at) : '—' %></td>
+      <td><span class="badge badge--status-<%= l.status === 'active' ? 'paid' : 'cancelled' %>"><%= l.status === 'active' ? 'Activa' : 'Revocada' %></span></td>
+      <td><form method="post" action="/admin/licencias/<%= l.id %>" class="cluster cluster--tight"><input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <input class="input input--sm mono" type="number" name="max_activations" value="<%= l.max_activations %>" min="1" style="width:64px" aria-label="Máximo de activaciones"><button class="btn btn--ghost btn--sm" name="action" value="max" type="submit">Guardar máx.</button>
+        <button class="btn btn--ghost btn--sm" name="action" value="reset" type="submit">Reiniciar</button>
+        <% if (l.status === 'active') { %><button class="btn btn--danger btn--sm" name="action" value="revoke" type="submit">Revocar</button><% } else { %><button class="btn btn--success btn--sm" name="action" value="activate" type="submit">Reactivar</button><% } %></form></td>
+    </tr><% }) %>
+    <% if (!result.rows.length) { %><tr><td colspan="7" class="text-muted">Sin licencias todavía. Se crean al confirmar cada compra.</td></tr><% } %>
+  </tbody>
+</table></div>
+<%- include('../../partials/pagination', { page: result.page, pages: result.pages, basePath: '/admin/licencias', query: { q } }) %>
+<%- include('../../partials/admin/footer') %>

@@ -9,6 +9,7 @@ const coupons = require('../models/coupons');
 function selectionFrom(src) {
   if (src.producto || src.product) return { kind: 'product', ref: String(src.producto || src.product) };
   if (src.plan) return { kind: 'plan', ref: String(src.plan) };
+  if (src.paquete || src.bundle) return { kind: 'bundle', ref: String(src.paquete || src.bundle) };
   return { kind: 'cart', ref: '' };
 }
 
@@ -50,7 +51,14 @@ async function createAndStart(req, res, providerId) {
     return res.redirect(backTo(selection));
   }
   const user = res.locals.currentUser;
+  if (require('../config').REQUIRE_EMAIL_VERIFICATION && !user.verified_at && user.role !== 'admin') {
+    const msg = 'Verifica tu correo antes de comprar. Revisa tu bandeja o reenvía el correo desde tu cuenta.';
+    if (wantsJson) return res.status(403).json({ error: msg });
+    req.flash('error', msg);
+    return res.redirect('/cuenta?tab=perfil');
+  }
   const { order, items } = ordersService.createFromSelection(req, user.id, selection, providerId);
+  if (provider.kind === 'manual') require('../services/emails').orderReceived({ user, order, items }).catch(() => {});
   if (selection.kind === 'cart') cart.clear(req);
   if (order.amount_cents === 0) {
     ordersService.markPaid(order.id, { provider_data: { free: true } });
@@ -68,6 +76,7 @@ async function createAndStart(req, res, providerId) {
 
 function backTo(selection) {
   if (selection.kind === 'product') return `/pagar?producto=${encodeURIComponent(selection.ref)}`;
+  if (selection.kind === 'bundle') return `/pagar?paquete=${encodeURIComponent(selection.ref)}`;
   if (selection.kind === 'plan') return `/pagar?plan=${encodeURIComponent(selection.ref)}`;
   return '/pagar';
 }
@@ -110,8 +119,29 @@ exports.whatsapp = (req, res, next) => {
 exports.stripeCreate = (req, res, next) => createAndStart(req, res, 'stripe').catch(next);
 exports.paypalCreate = (req, res, next) => createAndStart(req, res, 'paypal').catch(next);
 exports.btcCreate = (req, res, next) => createAndStart(req, res, 'btc').catch(next);
-exports.culqiCreate = (req, res) => {
-  res.status(503).render('checkout/not-configured', { title: 'Próximamente', provider: payments.get('culqi') });
+exports.culqiCreate = (req, res, next) => {
+  const provider = payments.get('culqi');
+  if (!provider.isEnabled()) return res.status(503).render('checkout/not-configured', { title: 'Próximamente', provider });
+  return createAndStart(req, res, 'culqi').catch(next);
+};
+
+exports.culqiCharge = async (req, res, next) => {
+  try {
+    const provider = payments.get('culqi');
+    if (!provider.isEnabled()) return res.status(503).json({ error: 'Culqi no está configurado.' });
+    const orderId = Number(req.body.orderId);
+    const token = String(req.body.token || '');
+    const order = ordersModel.byId(orderId);
+    if (!order || order.user_id !== res.locals.currentUser.id || order.provider !== 'culqi') return res.status(404).json({ error: 'Pedido no encontrado.' });
+    if (order.status === 'paid') return res.json({ ok: true, redirect: `/pedidos/${order.id}` });
+    if (!token) return res.status(400).json({ error: 'Falta el token de Culqi.' });
+    const result = await provider.charge({ order, token, email: res.locals.currentUser.email });
+    if (result.paid) ordersService.markPaid(order.id, { provider_ref: result.providerRef, provider_data: result.providerData });
+    else ordersModel.updateProvider(order.id, { provider_ref: result.providerRef, provider_data: result.providerData });
+    return res.json({ ok: result.paid, redirect: `/pedidos/${order.id}` });
+  } catch (err) {
+    return res.status(err.status || 500).json({ error: err.message });
+  }
 };
 
 exports.stripeReturn = async (req, res, next) => {

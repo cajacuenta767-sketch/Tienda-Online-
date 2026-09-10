@@ -1,0 +1,49 @@
+<%- include('../partials/admin/head') %>
+<% const maxRev = Math.max(1, ...series.map((s) => s.revenue)); const W = 720, H = 220, pad = 36; const bw = (W - pad * 2) / series.length; %>
+<div class="grid grid-4 stats-grid">
+  <div class="stat"><span class="stat__label">Visitas a fichas</span><span class="stat__value mono"><%= metrics.totals.views %></span><span class="stat__sub">acumuladas</span></div>
+  <div class="stat"><span class="stat__label">Ventas</span><span class="stat__value mono"><%= metrics.totals.sales %></span><span class="stat__sub">productos vendidos</span></div>
+  <div class="stat"><span class="stat__label">Conversión</span><span class="stat__value mono"><%= (metrics.conversion * 100).toFixed(2) %>%</span><span class="stat__sub">ventas / visitas</span></div>
+  <div class="stat"><span class="stat__label">Ingresos 12 meses</span><span class="stat__value mono"><%= money(series.reduce((s, m) => s + m.revenue, 0)) %></span><span class="stat__sub"><%= series.reduce((s, m) => s + m.orders, 0) %> pedidos pagados</span></div>
+</div>
+<section class="admin-block">
+  <div class="section__head"><h2>Ingresos por mes</h2><span class="text-muted">últimos 12 meses</span></div>
+  <div class="chart-wrap">
+    <svg class="chart" viewBox="0 0 <%= W %> <%= H %>" role="img" aria-label="Ingresos mensuales">
+      <% [0.25, 0.5, 0.75, 1].forEach(function (f) { const y = H - pad - (H - pad * 2) * f; %><line x1="<%= pad %>" y1="<%= y %>" x2="<%= W - pad %>" y2="<%= y %>" class="chart__grid"/><text x="<%= pad - 6 %>" y="<%= y + 4 %>" class="chart__tick" text-anchor="end"><%= money(Math.round(maxRev * f)).replace('.00', '') %></text><% }) %>
+      <% series.forEach(function (s, i) { const h = (H - pad * 2) * (s.revenue / maxRev); const x = pad + i * bw + bw * 0.2; %>
+        <rect x="<%= x %>" y="<%= H - pad - h %>" width="<%= bw * 0.6 %>" height="<%= h %>" rx="4" class="chart__bar"><title><%= s.month %>: <%= money(s.revenue) %> · <%= s.orders %> pedidos</title></rect>
+        <text x="<%= x + bw * 0.3 %>" y="<%= H - pad + 16 %>" class="chart__tick" text-anchor="middle"><%= s.label %></text>
+      <% }) %>
+    </svg>
+  </div>
+</section>
+<div class="admin-form__grid">
+  <section class="admin-block">
+    <h2>Productos más vistos (30 días)</h2>
+    <div class="table-wrap"><table class="table table--compact"><thead><tr><th>Producto</th><th>Vistas 30 d</th><th>Vistas total</th><th>Ventas</th></tr></thead><tbody>
+      <% metrics.topViewed.forEach(function (p) { %><tr><td><a href="/producto/<%= p.slug %>" target="_blank" rel="noopener"><%= p.title %></a></td><td class="mono"><%= p.views_30d %></td><td class="mono"><%= p.views_count %></td><td class="mono"><%= p.sales_count %></td></tr><% }) %>
+    </tbody></table></div>
+  </section>
+  <div class="stack">
+    <section class="admin-block">
+      <h2>Conversión por producto</h2>
+      <div class="table-wrap"><table class="table table--compact"><thead><tr><th>Producto</th><th>Ventas</th><th>Conv.</th></tr></thead><tbody>
+        <% metrics.topSold.forEach(function (p) { %><tr><td><%= p.title %></td><td class="mono"><%= p.sales_count %></td><td class="mono"><%= (p.conversion * 100).toFixed(1) %>%</td></tr><% }) %>
+      </tbody></table></div>
+    </section>
+    <section class="admin-block">
+      <h2>Cupones más usados</h2>
+      <% if (metrics.couponsUse.length) { %><div class="table-wrap"><table class="table table--compact"><thead><tr><th>Cupón</th><th>Usos</th><th>Descuento total</th></tr></thead><tbody>
+        <% metrics.couponsUse.forEach(function (c) { %><tr><td class="mono"><%= c.code %></td><td class="mono"><%= c.uses %></td><td class="mono"><%= money(c.discount) %></td></tr><% }) %>
+      </tbody></table></div><% } else { %><p class="text-muted">Todavía no se usaron cupones en pedidos pagados.</p><% } %>
+    </section>
+    <section class="admin-block">
+      <h2>Ingresos por método de pago</h2>
+      <div class="table-wrap"><table class="table table--compact"><thead><tr><th>Método</th><th>Pedidos</th><th>Ingresos</th></tr></thead><tbody>
+        <% metrics.byProvider.forEach(function (r) { %><tr><td><%= providerLabel(r.provider) %></td><td class="mono"><%= r.orders %></td><td class="mono"><%= money(r.revenue) %></td></tr><% }) %>
+      </tbody></table></div>
+    </section>
+  </div>
+</div>
+<%- include('../partials/admin/footer') %>

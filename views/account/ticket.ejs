@@ -1,0 +1,24 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<section class="page-head"><div class="container page-head__row"><div><nav class="breadcrumbs" aria-label="Ruta"><a href="/cuenta">Mi cuenta</a><span>/</span><a href="/cuenta/tickets">Soporte</a><span>/</span><span aria-current="page">#<%= ticket.id %></span></nav><h1><%= ticket.subject %></h1><% if (ticket.product_title) { %><p class="text-muted">Sobre <%= ticket.product_title %></p><% } %></div><span class="badge badge--lg badge--status-<%= ticket.status === 'open' ? 'pending' : ticket.status === 'answered' ? 'paid' : 'cancelled' %>"><%= ticket.status === 'open' ? 'Abierto' : ticket.status === 'answered' ? 'Respondido' : 'Cerrado' %></span></div></section>
+<section class="section section--tight">
+  <div class="container narrow">
+    <div class="thread">
+      <% messages.forEach(function (m) { %>
+        <div class="msg <%= m.is_admin ? 'msg--admin' : '' %>">
+          <div class="msg__head"><strong><%= m.is_admin ? storeName + ' · Soporte' : (m.user_name || 'Tú') %></strong><time class="mono text-muted"><%= fmtDateTime(m.created_at) %></time></div>
+          <div class="msg__body"><%- nl2paragraphs(m.body) %></div>
+        </div>
+      <% }) %>
+    </div>
+    <% if (ticket.status !== 'closed' && ticket.user_id === currentUser.id) { %>
+    <form class="form card-form mt-4" method="post" action="/cuenta/tickets/<%= ticket.id %>/responder">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field"><label class="label" for="rp-body">Tu respuesta</label><textarea class="textarea" id="rp-body" name="body" rows="4" required></textarea></div>
+      <div class="form__actions"><button class="btn btn--primary" type="submit">Enviar</button><button class="btn btn--ghost" type="submit" form="close-form">Cerrar ticket</button></div>
+    </form>
+    <form id="close-form" method="post" action="/cuenta/tickets/<%= ticket.id %>/cerrar"><input type="hidden" name="_csrf" value="<%= csrfToken %>"></form>
+    <% } %>
+  </div>
+</section>
+<%- include('../partials/footer') %>

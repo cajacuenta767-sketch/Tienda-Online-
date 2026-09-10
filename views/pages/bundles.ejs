@@ -1,0 +1,18 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<section class="page-head">
+  <div class="container">
+    <nav class="breadcrumbs" aria-label="Ruta"><a href="/">Inicio</a><span>/</span><span aria-current="page">Paquetes</span></nav>
+    <div class="page-head__row"><div><p class="eyebrow">Ahorra comprando junto</p><h1>Paquetes con descuento</h1><p class="text-muted">Sistemas que se complementan, a un precio menor que por separado. Cada producto del paquete se añade a tus descargas con su propia licencia.</p></div></div>
+  </div>
+</section>
+<section class="section section--tight">
+  <div class="container">
+    <% if (bundles.length) { %>
+      <div class="grid grid-3"><% bundles.forEach(function (b) { %><%- include('../partials/bundle-card', { bundle: b }) %><% }) %></div>
+    <% } else { %>
+      <div class="empty-state"><p class="mono">// próximamente</p><h2>Aún no hay paquetes</h2><a class="btn btn--primary" href="/tienda">Ver la tienda</a></div>
+    <% } %>
+  </div>
+</section>
+<%- include('../partials/footer') %>

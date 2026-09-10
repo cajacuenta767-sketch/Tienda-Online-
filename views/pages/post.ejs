@@ -1,0 +1,25 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<article class="post">
+  <section class="page-head">
+    <div class="container narrow">
+      <nav class="breadcrumbs" aria-label="Ruta"><a href="/">Inicio</a><span>/</span><a href="/blog">Blog</a><span>/</span><span aria-current="page"><%= post.title %></span></nav>
+      <h1><%= post.title %></h1>
+      <p class="text-muted"><time class="mono" datetime="<%= post.published_at %>"><%= fmtDate(post.published_at) %></time><% if (post.status !== 'published') { %> · <span class="badge badge--status-pending">Borrador</span><% } %></p>
+    </div>
+  </section>
+  <section class="section section--tight">
+    <div class="container narrow">
+      <% if (post.cover_path) { %><img class="post__cover" src="<%= post.cover_path %>" alt="" width="1280" height="800"><% } %>
+      <% if (post.excerpt) { %><p class="post__lead"><%= post.excerpt %></p><% } %>
+      <div class="prose post__body"><%- nl2paragraphs(post.body) %></div>
+    </div>
+  </section>
+  <% if (more.length) { %>
+  <section class="section section--alt">
+    <div class="container"><div class="section__head"><div><p class="eyebrow">Sigue leyendo</p><h2>Más artículos</h2></div></div>
+      <div class="grid grid-3"><% more.forEach(function (p) { %><%- include('../partials/post-card', { post: p }) %><% }) %></div></div>
+  </section>
+  <% } %>
+</article>
+<%- include('../partials/footer') %>

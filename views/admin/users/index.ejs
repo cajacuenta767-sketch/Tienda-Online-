@@ -4,8 +4,8 @@
   <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Compras</th><th>Registro</th><th></th></tr></thead>
   <tbody>
     <% rows.forEach(function (u) { %>
-      <tr><td><%= u.name %></td><td><%= u.email %></td><td><span class="badge <%= u.role === 'admin' ? 'badge--sale' : 'badge--cat' %>"><%= u.role %></span></td><td class="mono"><%= u.paid_orders %></td><td><%= fmtDate(u.created_at) %></td>
-        <td><form method="post" action="/admin/usuarios/<%= u.id %>/rol" class="cluster cluster--tight"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="role" value="<%= u.role === 'admin' ? 'user' : 'admin' %>"><button class="btn btn--ghost btn--sm" type="submit" <%= u.id === currentUser.id ? 'disabled' : '' %>><%= u.role === 'admin' ? 'Quitar admin' : 'Hacer admin' %></button></form></td></tr>
+      <tr><td><a href="/admin/usuarios/<%= u.id %>"><strong><%= u.name %></strong></a><% if (u.is_blocked) { %> <span class="badge badge--status-cancelled">Bloqueado</span><% } %></td><td><%= u.email %><% if (!u.verified_at) { %> <small class="text-muted">(sin verificar)</small><% } %></td><td><span class="badge <%= u.role === 'admin' ? 'badge--sale' : 'badge--cat' %>"><%= u.role %></span></td><td class="mono"><%= u.paid_orders %></td><td><%= fmtDate(u.created_at) %></td>
+        <td class="cluster cluster--tight"><a class="btn btn--secondary btn--sm" href="/admin/usuarios/<%= u.id %>">Ver</a><form method="post" action="/admin/usuarios/<%= u.id %>/rol" class="cluster cluster--tight"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="role" value="<%= u.role === 'admin' ? 'user' : 'admin' %>"><button class="btn btn--ghost btn--sm" type="submit" <%= u.id === currentUser.id ? 'disabled' : '' %>><%= u.role === 'admin' ? 'Quitar admin' : 'Hacer admin' %></button></form></td></tr>
     <% }) %>
   </tbody>
 </table></div>

@@ -11,6 +11,7 @@
       <div class="field"><label class="label" for="l-email">Correo</label><input class="input" id="l-email" name="email" type="email" autocomplete="email" required value="<%= form.email || '' %>"></div>
       <div class="field"><label class="label" for="l-pass">Contraseña</label><input class="input" id="l-pass" name="password" type="password" autocomplete="current-password" required></div>
       <button class="btn btn--primary btn--block btn--lg" type="submit">Entrar</button>
+      <p class="text-muted auth-card__alt"><a href="/recuperar">¿Olvidaste tu contraseña?</a></p>
       <p class="text-muted auth-card__alt">¿Aún no tienes cuenta? <a href="/registro<%= next !== '/cuenta' ? '?next=' + encodeURIComponent(next) : '' %>">Crear cuenta</a></p>
     </form>
   </div>

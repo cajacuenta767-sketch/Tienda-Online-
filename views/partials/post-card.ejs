@@ -1,0 +1,9 @@
+<article class="post-card">
+  <a class="post-card__cover" href="/blog/<%= post.slug %>"><img src="<%= post.cover_path || '/img/placeholder.svg' %>" alt="" loading="lazy"></a>
+  <div class="post-card__body">
+    <time class="mono text-muted" datetime="<%= post.published_at %>"><%= fmtDate(post.published_at) %></time>
+    <h3><a href="/blog/<%= post.slug %>"><%= post.title %></a></h3>
+    <p class="text-muted truncate-2"><%= post.excerpt %></p>
+    <a class="link-more" href="/blog/<%= post.slug %>">Leer →</a>
+  </div>
+</article>

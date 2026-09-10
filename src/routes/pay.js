@@ -19,5 +19,6 @@ r.post('/pago/btc/crear', requireLogin, csrf.verify, checkout.btcCreate);
 r.get('/pago/btc/:orderId', requireLogin, checkout.btcShow);
 r.post('/pago/btc/:orderId/confirmar', requireLogin, csrf.verify, checkout.btcConfirm);
 r.post('/pago/culqi/crear', requireLogin, csrf.verify, checkout.culqiCreate);
+r.post('/pago/culqi/cargar', requireLogin, csrf.verify, checkout.culqiCharge);
 
 module.exports = r;

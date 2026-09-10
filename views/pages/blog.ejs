@@ -1,0 +1,19 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<section class="page-head">
+  <div class="container">
+    <nav class="breadcrumbs" aria-label="Ruta"><a href="/">Inicio</a><span>/</span><span aria-current="page">Blog</span></nav>
+    <div class="page-head__row"><div><p class="eyebrow">Guías y tutoriales</p><h1>Blog</h1><p class="text-muted">Instalación, personalización y buenas prácticas para sacar partido a cada sistema.</p></div><span class="mono text-muted"><%= result.total %> entradas</span></div>
+  </div>
+</section>
+<section class="section section--tight">
+  <div class="container">
+    <% if (result.rows.length) { %>
+      <div class="grid grid-3"><% result.rows.forEach(function (post) { %><%- include('../partials/post-card', { post }) %><% }) %></div>
+      <%- include('../partials/pagination', { page: result.page, pages: result.pages, basePath: '/blog', query: {} }) %>
+    <% } else { %>
+      <div class="empty-state"><p class="mono">// próximamente</p><h2>Todavía no hay entradas publicadas</h2></div>
+    <% } %>
+  </div>
+</section>
+<%- include('../partials/footer') %>

@@ -1,0 +1,17 @@
+services:
+  devmarket:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DB_PATH: /data/devmarket.sqlite
+      STORAGE_DIR: /data/storage
+      UPLOADS_DIR: /data/uploads
+      BACKUP_DIR: /data/backups
+    volumes:
+      - devmarket-data:/data
+    restart: unless-stopped
+volumes:
+  devmarket-data:

@@ -5,6 +5,7 @@
     <form class="form auth-card" method="post" action="/registro" novalidate>
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <input type="hidden" name="next" value="<%= next %>">
+      <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
       <p class="eyebrow">Solo toma un minuto</p>
       <h1>Crear cuenta</h1>
       <% if (typeof errors !== 'undefined' && errors.length) { %><div class="alert alert--error"><ul><% errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul></div><% } %>

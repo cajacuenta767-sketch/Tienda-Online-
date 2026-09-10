@@ -1,0 +1,43 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<section class="page-head">
+  <div class="container">
+    <nav class="breadcrumbs" aria-label="Ruta"><a href="/">Inicio</a><span>/</span><span aria-current="page">Comparar</span></nav>
+    <div class="page-head__row"><div><h1>Comparar productos</h1><p class="text-muted">Elige hasta tres productos y compáralos lado a lado. Puedes añadirlos desde el botón ⇄ de cada tarjeta.</p></div></div>
+  </div>
+</section>
+<section class="section section--tight">
+  <div class="container">
+    <form class="cluster compare-picker" method="get" action="/comparar" data-compare-form>
+      <% [0, 1, 2].forEach(function (i) { %>
+        <select class="select" name="sel" aria-label="Producto <%= i + 1 %>"><option value="">— Producto <%= i + 1 %> —</option><% allProducts.forEach(function (p) { %><option value="<%= p.slug %>" <%= slugs[i] === p.slug ? 'selected' : '' %>><%= p.title %></option><% }) %></select>
+      <% }) %>
+      <input type="hidden" name="p" value="<%= slugs.join(',') %>">
+      <button class="btn btn--primary" type="submit">Comparar</button>
+      <% if (slugs.length) { %><a class="btn btn--ghost" href="/comparar" data-compare-clear>Limpiar</a><% } %>
+    </form>
+    <% if (items.length) { %>
+    <div class="table-wrap mt-4">
+      <table class="table table--compare compare-table">
+        <thead><tr><th></th><% items.forEach(function (p) { %><th><a href="/producto/<%= p.slug %>"><img src="<%= thumb(p.image || '/img/placeholder.svg') %>" alt="" class="compare-thumb"><strong><%= p.title %></strong></a></th><% }) %></tr></thead>
+        <tbody>
+          <tr><td>Precio</td><% items.forEach(function (p) { %><td><%- include('../partials/price', { product: p }) %></td><% }) %></tr>
+          <tr><td>Categoría</td><% items.forEach(function (p) { %><td><%= p.category_name || '—' %></td><% }) %></tr>
+          <tr><td>Valoración</td><% items.forEach(function (p) { %><td><%- stars(p.rating_avg) %> <small class="text-muted">(<%= p.rating_count %>)</small></td><% }) %></tr>
+          <tr><td>Versión</td><% items.forEach(function (p) { %><td class="mono">v<%= p.version %></td><% }) %></tr>
+          <tr><td>Ventas</td><% items.forEach(function (p) { %><td class="mono"><%= p.sales_count %></td><% }) %></tr>
+          <tr><td>Demo</td><% items.forEach(function (p) { %><td><% if (p.demo_url) { %><a href="/demo/<%= p.slug %>">Ver demo</a><% } else { %>—<% } %></td><% }) %></tr>
+          <tr><td>Tecnologías</td><% items.forEach(function (p) { %><td><%= p.tags.map((t) => t.name).join(', ') || '—' %></td><% }) %></tr>
+          <tr><td>Características</td><% items.forEach(function (p) { %><td><%- nl2list(p.features) %></td><% }) %></tr>
+          <tr><td>Requisitos</td><% items.forEach(function (p) { %><td><%- nl2list(p.requirements) %></td><% }) %></tr>
+          <tr><td>Licencia</td><% items.forEach(function (p) { %><td><%= p.license %></td><% }) %></tr>
+          <tr><td></td><% items.forEach(function (p) { %><td><a class="btn btn--primary btn--sm" href="/pagar?producto=<%= p.slug %>">Comprar</a></td><% }) %></tr>
+        </tbody>
+      </table>
+    </div>
+    <% } else { %>
+      <div class="empty-state mt-4"><p class="mono">// vacío</p><h2>Elige productos para comparar</h2><a class="btn btn--primary" href="/tienda">Ir a la tienda</a></div>
+    <% } %>
+  </div>
+</section>
+<%- include('../partials/footer') %>

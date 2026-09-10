@@ -1,0 +1,11 @@
+<%- include('../../partials/admin/head') %>
+<div class="admin-toolbar"><span class="text-muted">Agrupa productos que se complementan y véndelos con descuento.</span><a class="btn btn--primary" href="/admin/paquetes/nuevo">+ Nuevo paquete</a></div>
+<div class="table-wrap"><table class="table">
+  <thead><tr><th>Paquete</th><th>Productos</th><th>Precio</th><th>Ahorro</th><th>Estado</th><th></th></tr></thead>
+  <tbody>
+    <% bundles.forEach(function (b) { %><tr><td><strong><%= b.name %></strong><br><small class="mono text-muted">/paquetes/<%= b.slug %></small></td><td><%= b.products.map((p) => p.title).join(' + ') %></td><td class="mono"><%= money(b.price_cents) %> <small class="text-muted"><s><%= money(b.regular_cents) %></s></small></td><td class="mono"><%= b.savings_pct %>%</td><td><span class="badge badge--status-<%= b.is_active ? 'paid' : 'cancelled' %>"><%= b.is_active ? 'Activo' : 'Inactivo' %></span></td>
+      <td class="cluster cluster--tight"><a class="btn btn--secondary btn--sm" href="/admin/paquetes/<%= b.id %>/editar">Editar</a><form method="post" action="/admin/paquetes/<%= b.id %>/eliminar" data-confirm="¿Eliminar el paquete?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--danger btn--sm" type="submit">✕</button></form></td></tr><% }) %>
+    <% if (!bundles.length) { %><tr><td colspan="6" class="text-muted">Sin paquetes.</td></tr><% } %>
+  </tbody>
+</table></div>
+<%- include('../../partials/admin/footer') %>

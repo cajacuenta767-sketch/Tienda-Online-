@@ -26,7 +26,7 @@ function list({ q = '', categorySlug = null, tagSlug = null, tagSlugs = [], minC
   const db = getDb();
   const where = [];
   const params = {};
-  if (onlyActive) where.push('p.is_active = 1');
+  if (onlyActive) where.push('p.is_active = 1 AND p.is_archived = 0');
   if (q) { where.push('(p.title LIKE @q OR p.short_description LIKE @q OR p.long_description LIKE @q OR p.id IN (SELECT pt.product_id FROM product_tags pt JOIN tags t ON t.id = pt.tag_id WHERE t.name LIKE @q))'); params.q = `%${q}%`; }
   if (categorySlug) { where.push('c.slug = @categorySlug'); params.categorySlug = categorySlug; }
   if (tagSlug) { where.push('p.id IN (SELECT pt.product_id FROM product_tags pt JOIN tags t ON t.id = pt.tag_id WHERE t.slug = @tagSlug)'); params.tagSlug = tagSlug; }
@@ -114,14 +114,21 @@ function normalize(d) {
     is_featured: d.is_featured ? 1 : 0,
     is_new: d.is_new ? 1 : 0,
     is_active: d.is_active === undefined ? 1 : (d.is_active ? 1 : 0),
+    video_url: d.video_url || null,
+    faq: d.faq || '',
+    package_contents: d.package_contents || '',
+    title_en: d.title_en || null,
+    short_description_en: d.short_description_en || null,
+    long_description_en: d.long_description_en || null,
+    features_en: d.features_en || null,
   };
 }
 function create(data) {
   const slug = uniqueSlug(data.slug || data.title, (s) => slugExists(s));
   const info = getDb().prepare(`INSERT INTO products (title, slug, category_id, short_description, long_description, features, requirements,
-    price_cents, discount_cents, currency, demo_url, version, license, is_featured, is_new, is_active)
+    price_cents, discount_cents, currency, demo_url, version, license, is_featured, is_new, is_active, video_url, faq, package_contents, title_en, short_description_en, long_description_en, features_en)
     VALUES (@title, @slug, @category_id, @short_description, @long_description, @features, @requirements,
-    @price_cents, @discount_cents, @currency, @demo_url, @version, @license, @is_featured, @is_new, @is_active)`).run(normalize({ ...data, slug }));
+    @price_cents, @discount_cents, @currency, @demo_url, @version, @license, @is_featured, @is_new, @is_active, @video_url, @faq, @package_contents, @title_en, @short_description_en, @long_description_en, @features_en)`).run(normalize({ ...data, slug }));
   return byId(info.lastInsertRowid);
 }
 function update(id, data) {
@@ -129,6 +136,7 @@ function update(id, data) {
   getDb().prepare(`UPDATE products SET title=@title, slug=@slug, category_id=@category_id, short_description=@short_description,
     long_description=@long_description, features=@features, requirements=@requirements, price_cents=@price_cents, discount_cents=@discount_cents,
     currency=@currency, demo_url=@demo_url, version=@version, license=@license, is_featured=@is_featured, is_new=@is_new, is_active=@is_active,
+    video_url=@video_url, faq=@faq, package_contents=@package_contents, title_en=@title_en, short_description_en=@short_description_en, long_description_en=@long_description_en, features_en=@features_en,
     updated_at=datetime('now') WHERE id=@id`).run({ ...normalize({ ...data, slug }), id });
   return byId(id);
 }
@@ -140,6 +148,28 @@ function setVersion(id, version) {
 }
 function remove(id) {
   getDb().prepare('DELETE FROM products WHERE id = ?').run(id);
+}
+function archive(id) { getDb().prepare("UPDATE products SET is_archived = 1, updated_at = datetime('now') WHERE id = ?").run(id); }
+function restore(id) { getDb().prepare("UPDATE products SET is_archived = 0, updated_at = datetime('now') WHERE id = ?").run(id); }
+function incrementViews(id) {
+  const db = getDb();
+  db.prepare('UPDATE products SET views_count = views_count + 1 WHERE id = ?').run(id);
+  db.prepare("INSERT INTO product_views (product_id, day, count) VALUES (?, date('now'), 1) ON CONFLICT(product_id, day) DO UPDATE SET count = count + 1").run(id);
+}
+function metrics() {
+  const db = getDb();
+  const months = db.prepare(`SELECT strftime('%Y-%m', paid_at) AS month, COUNT(*) AS orders, COALESCE(SUM(amount_cents),0) AS revenue
+    FROM orders WHERE status = 'paid' AND paid_at >= date('now', '-11 months', 'start of month') GROUP BY month ORDER BY month`).all();
+  const topViewed = db.prepare(`SELECT p.id, p.title, p.slug, p.views_count, p.sales_count,
+      COALESCE((SELECT SUM(v.count) FROM product_views v WHERE v.product_id = p.id AND v.day >= date('now', '-30 days')), 0) AS views_30d
+    FROM products p WHERE p.is_archived = 0 ORDER BY views_30d DESC, p.views_count DESC LIMIT 8`).all();
+  const topSold = db.prepare(`SELECT p.id, p.title, p.slug, p.sales_count, p.views_count, p.sales_count * 1.0 / MAX(p.views_count, 1) AS conversion
+    FROM products p WHERE p.is_archived = 0 ORDER BY p.sales_count DESC, p.views_count DESC LIMIT 8`).all();
+  const totals = db.prepare(`SELECT COALESCE(SUM(views_count),0) AS views, COALESCE(SUM(sales_count),0) AS sales FROM products`).get();
+  const couponsUse = db.prepare(`SELECT coupon_code AS code, COUNT(*) AS uses, COALESCE(SUM(discount_cents),0) AS discount FROM orders WHERE status = 'paid' AND coupon_code IS NOT NULL GROUP BY coupon_code ORDER BY uses DESC LIMIT 6`).all();
+  const byProvider = db.prepare(`SELECT provider, COUNT(*) AS orders, COALESCE(SUM(amount_cents),0) AS revenue FROM orders WHERE status = 'paid' GROUP BY provider ORDER BY revenue DESC`).all();
+  const last30 = db.prepare(`SELECT date(paid_at) AS day, COALESCE(SUM(amount_cents),0) AS revenue FROM orders WHERE status='paid' AND paid_at >= date('now', '-29 days') GROUP BY day ORDER BY day`).all();
+  return { months, topViewed, topSold, totals, conversion: totals.views ? totals.sales / totals.views : 0, couponsUse, byProvider, last30 };
 }
 function incrementDownloads(id) {
   getDb().prepare('UPDATE products SET downloads_count = downloads_count + 1 WHERE id = ?').run(id);
@@ -156,9 +186,9 @@ function stats() {
     sales: db.prepare('SELECT COALESCE(SUM(sales_count),0) AS c FROM products').get().c,
   };
 }
-function adminList({ q = '', page = 1, perPage = 25 } = {}) {
+function adminList({ q = '', page = 1, perPage = 25, archived = false } = {}) {
   const db = getDb();
-  const where = q ? 'WHERE p.title LIKE @q OR p.slug LIKE @q' : '';
+  const where = `WHERE p.is_archived = ${archived ? 1 : 0}` + (q ? ' AND (p.title LIKE @q OR p.slug LIKE @q)' : '');
   const params = { q: `%${q}%`, limit: perPage, offset: (page - 1) * perPage };
   const rows = db.prepare(`${BASE_SELECT} ${where} ORDER BY p.updated_at DESC LIMIT @limit OFFSET @offset`).all(params);
   const total = db.prepare(`SELECT COUNT(*) AS c FROM products p ${where}`).get(params).c;
@@ -172,4 +202,11 @@ function discountPct(p) {
   return Math.round((1 - p.discount_cents / p.price_cents) * 100);
 }
 
-module.exports = { list, priceRange, suggest, featured, newest, topRated, related, bySlug, byId, byIds, hydrate, slugExists, create, update, setFile, setVersion, remove, incrementDownloads, incrementSales, stats, adminList, effectivePrice, discountPct, SORTS };
+function buyersOf(productId) {
+  return getDb().prepare(`SELECT DISTINCT u.* FROM users u JOIN orders o ON o.user_id = u.id JOIN order_items oi ON oi.order_id = o.id WHERE o.status = 'paid' AND oi.product_id = ? AND u.is_blocked = 0`).all(productId);
+}
+function activeMembers() {
+  return getDb().prepare(`SELECT DISTINCT u.* FROM users u JOIN memberships m ON m.user_id = u.id WHERE m.status = 'active' AND (m.ends_at IS NULL OR m.ends_at > datetime('now')) AND u.is_blocked = 0`).all();
+}
+
+module.exports = { list, priceRange, suggest, featured, newest, topRated, related, bySlug, byId, byIds, hydrate, slugExists, create, update, setFile, setVersion, remove, archive, restore, incrementViews, metrics, buyersOf, activeMembers, incrementDownloads, incrementSales, stats, adminList, effectivePrice, discountPct, SORTS };

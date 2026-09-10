@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: devmarket
+    runtime: node
+    plan: starter
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    disk:
+      name: devmarket-data
+      mountPath: /var/data
+      sizeGB: 5
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_PATH
+        value: /var/data/devmarket.sqlite
+      - key: STORAGE_DIR
+        value: /var/data/storage
+      - key: UPLOADS_DIR
+        value: /var/data/uploads
+      - key: BACKUP_DIR
+        value: /var/data/backups
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: BASE_URL
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: WHATSAPP_NUMBER
+        sync: false

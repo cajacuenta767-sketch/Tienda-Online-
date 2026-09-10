@@ -16,14 +16,17 @@
       <h4>Tienda</h4>
       <a href="/tienda">Todos los productos</a>
       <% navCategories.forEach(function (c) { %><a href="/tienda/categoria/<%= c.slug %>"><%= c.name %></a><% }) %>
-      <a href="/tienda?oferta=1">En oferta</a>
-      <a href="/nuevos">Nuevos lanzamientos</a>
-      <a href="/membresia">Membresía</a>
+      <a href="/tienda?oferta=1"><%= t('nav.offers') %></a>
+      <a href="/paquetes"><%= t('nav.bundles') %></a>
+      <a href="/nuevos"><%= t('nav.new') %></a>
+      <a href="/membresia"><%= t('nav.membership') %></a>
     </div>
     <div class="footer__col">
       <h4>Ayuda</h4>
-      <a href="/contacto">Contacto</a>
-      <a href="/actualizaciones">Actualizaciones</a>
+      <a href="/contacto"><%= t('nav.contact') %></a>
+      <a href="/blog"><%= t('nav.blog') %></a>
+      <a href="/cuenta/tickets"><%= t('account.tickets') %></a>
+      <a href="/actualizaciones"><%= t('nav.updates') %></a>
       <a href="/terminos">Términos y licencias</a>
       <a href="/nosotros">Quiénes somos</a>
       <% if (settings.support_email) { %><a href="mailto:<%= settings.support_email %>"><%= settings.support_email %></a><% } %>
@@ -41,7 +44,7 @@
   </div>
   <div class="container footer__bottom">
     <span>© <%= new Date().getFullYear() %> <%= storeName %>. Código con licencia, soporte real.</span>
-    <span class="mono">v2.0.0</span>
+    <span class="cluster cluster--tight"><a href="?lang=es" class="<%= locale === 'es' ? 'text-primary' : '' %>">ES</a> · <a href="?lang=en" class="<%= locale === 'en' ? 'text-primary' : '' %>">EN</a> · <span class="mono">v3.0.0</span></span>
   </div>
 </footer>
 <% if (waEnabled && settings.whatsapp_number) { %>

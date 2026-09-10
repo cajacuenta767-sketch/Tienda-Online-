@@ -1,0 +1,50 @@
+<%- include('../../partials/admin/head') %>
+<div class="admin-form__grid">
+  <div class="stack">
+    <section class="admin-block">
+      <div class="section__head"><h2><%= user.name %> <% if (user.is_blocked) { %><span class="badge badge--status-cancelled">Bloqueado</span><% } %> <span class="badge <%= user.role === 'admin' ? 'badge--sale' : 'badge--cat' %>"><%= user.role %></span></h2><span class="mono text-muted">#<%= user.id %></span></div>
+      <ul class="buy-box__facts"><li><span>Correo</span><strong><%= user.email %> <%= user.verified_at ? '✔' : '(sin verificar)' %></strong></li><li><span>Registro</span><strong><%= fmtDateTime(user.created_at) %></strong></li><li><span>Idioma</span><strong><%= user.locale %></strong></li><li><span>Membresía</span><strong><%= membership ? membership.plan_name + (membership.ends_at ? ' · vence ' + fmtDate(membership.ends_at) : ' · vitalicia') : '—' %></strong></li></ul>
+    </section>
+    <section class="admin-block">
+      <h2>Compras (<%= orders.length %>)</h2>
+      <div class="table-wrap"><table class="table table--compact"><thead><tr><th>Ref.</th><th>Fecha</th><th>Ítems</th><th>Método</th><th>Monto</th><th>Estado</th></tr></thead><tbody>
+        <% orders.forEach(function (o) { %><tr><td><a class="mono" href="/admin/pedidos/<%= o.id %>"><%= o.reference %></a></td><td><%= fmtDateTime(o.created_at) %></td><td><%= o.items.map((i) => i.title).join(', ') %></td><td><%= providerLabel(o.provider) %></td><td class="mono"><%= money(o.amount_cents) %></td><td><span class="badge badge--status-<%= o.status %>"><%= statusLabel(o.status) %></span></td></tr><% }) %>
+        <% if (!orders.length) { %><tr><td colspan="6" class="text-muted">Sin compras.</td></tr><% } %>
+      </tbody></table></div>
+    </section>
+    <section class="admin-block">
+      <h2>Licencias (<%= licenses.length %>)</h2>
+      <div class="table-wrap"><table class="table table--compact"><thead><tr><th>Clave</th><th>Producto</th><th>Activaciones</th><th>Estado</th></tr></thead><tbody>
+        <% licenses.forEach(function (l) { %><tr><td class="mono"><%= l.key %></td><td><%= l.product_title %></td><td class="mono"><%= l.activationsList.length %>/<%= l.max_activations %></td><td><span class="badge badge--status-<%= l.status === 'active' ? 'paid' : 'cancelled' %>"><%= l.status %></span></td></tr><% }) %>
+        <% if (!licenses.length) { %><tr><td colspan="4" class="text-muted">Sin licencias.</td></tr><% } %>
+      </tbody></table></div>
+    </section>
+    <section class="admin-block">
+      <h2>Tickets (<%= tickets.length %>) · Favoritos (<%= favorites.length %>)</h2>
+      <% tickets.forEach(function (t) { %><p><a href="/admin/tickets/<%= t.id %>">#<%= t.id %> <%= t.subject %></a> <span class="badge badge--status-<%= t.status === 'open' ? 'pending' : t.status === 'answered' ? 'paid' : 'cancelled' %>"><%= t.status %></span></p><% }) %>
+      <p class="text-muted"><%= favorites.map((p) => p.title).join(', ') || 'Sin favoritos.' %></p>
+    </section>
+  </div>
+  <aside class="stack">
+    <section class="admin-block">
+      <h2>Acciones</h2>
+      <div class="stack">
+        <form method="post" action="/admin/usuarios/<%= user.id %>/otorgar" class="form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="field"><label class="label" for="grant">Dar acceso gratis a un producto</label><select class="select" id="grant" name="product_id" required><option value="">Elegir producto…</option><% allProducts.filter((p) => !owned.some((o) => o.id === p.id)).forEach(function (p) { %><option value="<%= p.id %>"><%= p.title %></option><% }) %></select></div>
+          <div class="field"><input class="input input--sm" name="note" placeholder="Motivo (opcional)"></div>
+          <button class="btn btn--success btn--block" type="submit">Asignar producto</button>
+        </form>
+        <form method="post" action="/admin/usuarios/<%= user.id %>/reenviar-acceso"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--secondary btn--block" type="submit">Reenviar correos de acceso</button></form>
+        <% if (!user.verified_at) { %>
+        <form method="post" action="/admin/usuarios/<%= user.id %>/reenviar-verificacion"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--secondary btn--block" type="submit">Reenviar verificación</button></form>
+        <form method="post" action="/admin/usuarios/<%= user.id %>/verificar"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--ghost btn--block" type="submit">Marcar como verificado</button></form>
+        <% } %>
+        <form method="post" action="/admin/usuarios/<%= user.id %>/rol"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="role" value="<%= user.role === 'admin' ? 'user' : 'admin' %>"><button class="btn btn--ghost btn--block" type="submit" <%= user.id === currentUser.id ? 'disabled' : '' %>><%= user.role === 'admin' ? 'Quitar rol admin' : 'Hacer administrador' %></button></form>
+        <form method="post" action="/admin/usuarios/<%= user.id %>/bloquear" data-confirm="<%= user.is_blocked ? '¿Desbloquear esta cuenta?' : '¿Bloquear esta cuenta? No podrá iniciar sesión ni descargar.' %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--danger btn--block" type="submit" <%= user.id === currentUser.id ? 'disabled' : '' %>><%= user.is_blocked ? 'Desbloquear cuenta' : 'Bloquear cuenta' %></button></form>
+      </div>
+    </section>
+    <a class="btn btn--ghost btn--block" href="/admin/usuarios">Volver a clientes</a>
+  </aside>
+</div>
+<%- include('../../partials/admin/footer') %>

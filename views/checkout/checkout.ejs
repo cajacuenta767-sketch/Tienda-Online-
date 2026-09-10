@@ -1,6 +1,6 @@
 <%- include('../partials/head') %>
 <%- include('../partials/header') %>
-<% const kindParam = selection.kind === 'product' ? `<input type="hidden" name="producto" value="${selection.ref}">` : selection.kind === 'plan' ? `<input type="hidden" name="plan" value="${selection.ref}">` : ''; %>
+<% const kindParam = selection.kind === 'product' ? `<input type="hidden" name="producto" value="${selection.ref}">` : selection.kind === 'plan' ? `<input type="hidden" name="plan" value="${selection.ref}">` : selection.kind === 'bundle' ? `<input type="hidden" name="paquete" value="${selection.ref}">` : ''; %>
 <section class="page-head"><div class="container page-head__row"><div><p class="eyebrow">Último paso</p><h1>Finalizar compra</h1></div><span class="mono text-muted">Pedido a nombre de <%= currentUser.email %></span></div></section>
 <section class="section section--tight checkout-page">
   <div class="container two-col two-col--reverse">
@@ -38,6 +38,9 @@
                 <div id="paypal-buttons" data-paypal-client="<%= clientConfig.paypal.clientId %>" data-paypal-currency="<%= clientConfig.paypal.currency %>" data-kind="<%= selection.kind %>" data-ref="<%= selection.ref %>" data-csrf="<%= csrfToken %>"></div>
                 <p class="help text-muted" data-paypal-status></p>
               <% } else { %><button class="btn btn--secondary btn--block" disabled>PayPal no configurado</button><% } %>
+            <% } else if (p.id === 'culqi' && p.enabled) { %>
+              <button type="button" class="btn btn--primary btn--block" data-culqi data-kind="<%= selection.kind %>" data-ref="<%= selection.ref %>" data-csrf="<%= csrfToken %>" data-public-key="<%= clientConfig.culqi.publicKey %>" data-store="<%= storeName %>">Pagar en soles (≈ <%= money(Math.round(total * clientConfig.culqi.penRate), 'PEN') %>)</button>
+              <p class="help text-muted" data-culqi-status></p>
             <% } else { %>
               <form method="post" action="/pago/<%= p.id %>/crear">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>"><%- kindParam %>
@@ -53,4 +56,5 @@
     </div>
   </div>
 </section>
-<%- include('../partials/footer', { extraScripts: providers.find(p => p.id === 'paypal' && p.enabled) ? `<script src="https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientConfig.paypal.clientId)}&currency=${clientConfig.paypal.currency}" data-namespace="paypal_sdk"></script><script src="/js/checkout.js" defer></script>` : '<script src="/js/checkout.js" defer></script>' }) %>
+<% let extra = ''; if (providers.find(p => p.id === 'paypal' && p.enabled)) extra += `<script src="https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientConfig.paypal.clientId)}&currency=${clientConfig.paypal.currency}" data-namespace="paypal_sdk"></script>`; if (providers.find(p => p.id === 'culqi' && p.enabled)) extra += '<script src="https://checkout.culqi.com/js/v4"></script>'; extra += '<script src="/js/checkout.js" defer></script>'; %>
+<%- include('../partials/footer', { extraScripts: extra }) %>

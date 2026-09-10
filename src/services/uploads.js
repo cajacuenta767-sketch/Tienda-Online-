@@ -69,4 +69,34 @@ function validateImages(files) {
   return tooBig.length ? `Alguna imagen supera ${config.MAX_IMAGE_MB} MB y fue descartada.` : null;
 }
 
-module.exports = { productUpload, removeFile, removeImageByWebPath, removeProductFile, validateImages };
+let sharp = null;
+try { sharp = require('sharp'); } catch (_) { sharp = null; }
+
+/** Convierte una imagen subida a WebP 1280×800 (recorte centrado) y genera una miniatura. Devuelve la ruta web. */
+async function optimizeImage(file) {
+  if (!sharp || !file) return file ? `/uploads/${file.filename}` : null;
+  const base = path.parse(file.filename).name;
+  const out = path.join(config.UPLOADS_DIR, `${base}.webp`);
+  const thumb = path.join(config.UPLOADS_DIR, `${base}-thumb.webp`);
+  try {
+    const img = sharp(file.path).rotate();
+    await img.clone().resize(1280, 800, { fit: 'cover', position: 'attention' }).webp({ quality: 82 }).toFile(out);
+    await img.clone().resize(480, 300, { fit: 'cover', position: 'attention' }).webp({ quality: 74 }).toFile(thumb);
+    removeFile(file.path);
+    return `/uploads/${base}.webp`;
+  } catch (_) {
+    return `/uploads/${file.filename}`;
+  }
+}
+function thumbFor(webPath) {
+  if (!webPath || !webPath.startsWith('/uploads/') || !webPath.endsWith('.webp')) return webPath;
+  const t = webPath.replace(/\.webp$/, '-thumb.webp');
+  return fs.existsSync(path.join(config.UPLOADS_DIR, path.basename(t))) ? t : webPath;
+}
+const _removeImageByWebPath = removeImageByWebPath;
+function removeImageAndThumb(webPath) {
+  _removeImageByWebPath(webPath);
+  if (webPath && webPath.endsWith('.webp')) _removeImageByWebPath(webPath.replace(/\.webp$/, '-thumb.webp'));
+}
+
+module.exports = { productUpload, removeFile, removeImageByWebPath: removeImageAndThumb, removeProductFile, validateImages, optimizeImage, thumbFor, hasSharp: Boolean(sharp) };

@@ -13,6 +13,8 @@
         <button class="tabs__tab" role="tab" data-tab="compras" aria-selected="<%= tab === 'compras' %>">Compras <span class="count"><%= myOrders.length %></span></button>
         <button class="tabs__tab" role="tab" data-tab="descargas" aria-selected="<%= tab === 'descargas' %>">Descargas <span class="count"><%= downloadable.length %></span></button>
         <button class="tabs__tab" role="tab" data-tab="membresia" aria-selected="<%= tab === 'membresia' %>">Membresía</button>
+        <button class="tabs__tab" role="tab" data-tab="licencias" aria-selected="<%= tab === 'licencias' %>">Licencias <span class="count"><%= licenses.length %></span></button>
+        <a class="tabs__tab" href="/cuenta/tickets">Soporte<% if (openTickets) { %> <span class="count"><%= openTickets %></span><% } %></a>
         <button class="tabs__tab" role="tab" data-tab="perfil" aria-selected="<%= tab === 'perfil' %>">Perfil</button>
       </div>
 
@@ -79,12 +81,30 @@
         <% } %>
       </div>
 
+      <div class="tabs__panel" data-panel="licencias" <%= tab !== 'licencias' ? 'hidden' : '' %>>
+        <% if (licenses.length) { %>
+        <p class="text-muted">Cada compra genera una clave. Úsala en la instalación del sistema si te la pide, o valida desde tu código con <code>POST /api/licencias/validar</code>.</p>
+        <div class="table-wrap"><table class="table"><thead><tr><th>Clave</th><th>Producto</th><th>Activaciones</th><th>Estado</th><th></th></tr></thead><tbody>
+          <% licenses.forEach(function (l) { %><tr><td class="mono"><%= l.key %></td><td><a href="/producto/<%= l.product_slug %>"><%= l.product_title %></a></td><td class="mono"><%= l.activationsList.length %> / <%= l.max_activations %><% if (l.activationsList.length) { %><br><small class="text-muted"><%= l.activationsList.join(', ') %></small><% } %></td><td><span class="badge badge--status-<%= l.status === 'active' ? 'paid' : 'cancelled' %>"><%= l.status === 'active' ? 'Activa' : 'Revocada' %></span></td><td><button type="button" class="btn btn--ghost btn--sm" data-copy="<%= l.key %>">Copiar</button></td></tr><% }) %>
+        </tbody></table></div>
+        <% } else { %>
+          <div class="empty-state"><p class="mono">// sin licencias</p><h2>Aún no tienes claves de licencia</h2><p>Se generan automáticamente al confirmarse cada compra.</p></div>
+        <% } %>
+      </div>
+
       <div class="tabs__panel" data-panel="perfil" <%= tab !== 'perfil' ? 'hidden' : '' %>>
+        <% if (!fullUser.verified_at) { %>
+        <div class="alert alert--info"><span>Tu correo aún no está verificado. Revisa tu bandeja de entrada.</span><form method="post" action="/verificar/reenviar"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--secondary btn--sm" type="submit">Reenviar correo</button></form></div>
+        <% } %>
         <div class="two-col two-col--even">
-          <div class="detail-block detail-block--card">
+          <form class="form detail-block detail-block--card" method="post" action="/cuenta/perfil">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <h2>Datos</h2>
-            <ul class="buy-box__facts"><li><span>Nombre</span><strong><%= currentUser.name %></strong></li><li><span>Correo</span><strong><%= currentUser.email %></strong></li><li><span>Rol</span><strong><%= currentUser.role %></strong></li></ul>
-          </div>
+            <div class="field"><label class="label" for="pf-name">Nombre</label><input class="input" id="pf-name" name="name" value="<%= currentUser.name %>" required></div>
+            <div class="field"><span class="label">Correo</span><input class="input" value="<%= currentUser.email %>" disabled> <span class="help"><%= fullUser.verified_at ? '✔ Verificado' : 'Sin verificar' %></span></div>
+            <div class="field"><label class="label" for="pf-locale">Idioma</label><select class="select" id="pf-locale" name="locale"><option value="es" <%= locale === 'es' ? 'selected' : '' %>>Español</option><option value="en" <%= locale === 'en' ? 'selected' : '' %>>English</option></select></div>
+            <div class="form__actions"><button class="btn btn--primary" type="submit">Guardar</button></div>
+          </form>
           <form class="form detail-block detail-block--card" method="post" action="/cuenta/password">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <h2>Cambiar contraseña</h2>

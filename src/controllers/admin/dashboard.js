@@ -21,6 +21,8 @@ exports.index = (req, res) => {
       downloads: downloads.count(),
       unread: contactMessages.unreadCount(),
       pendingReviews: reviews.pendingCount(),
+      openTickets: require('../../models/tickets').openCount(),
+      outbox: require('../../services/mailer').isConfigured() ? 0 : require('../../db').getDb().prepare("SELECT COUNT(*) AS c FROM emails WHERE status = 'outbox'").get().c,
     },
     pendingManual: orders.pendingManual(),
     recentOrders: orders.recent(8),

@@ -1,0 +1,26 @@
+[
+  {
+    "title": "Cómo instalar un sistema PHP en un hosting compartido (cPanel) en 10 minutos",
+    "slug": "instalar-sistema-php-cpanel",
+    "status": "published",
+    "published_at": "2026-08-20",
+    "excerpt": "Guía paso a paso para subir el ZIP, crear la base de datos MySQL y dejar funcionando cualquier sistema PHP del catálogo.",
+    "body": "La mayoría de nuestros sistemas en PHP funcionan en un hosting compartido normal. Solo necesitas PHP 8, MySQL y acceso a cPanel.\n\n1. Descarga el ZIP desde tu cuenta y descomprímelo en la carpeta public_html (o en una subcarpeta si vas a usar un subdominio).\n\n2. En cPanel entra a \"Bases de datos MySQL\", crea una base de datos y un usuario, y asígnale todos los permisos.\n\n3. Abre el archivo .env o config.php del sistema y escribe el nombre de la base, el usuario y la contraseña.\n\n4. Visita tu dominio: el instalador creará las tablas y te pedirá el usuario administrador.\n\nSi algo falla, revisa que mod_rewrite esté activo y que la versión de PHP sea la correcta. Y si te atascas, abre un ticket desde tu cuenta: respondemos en menos de 24 horas."
+  },
+  {
+    "title": "¿Comprar un sistema con código fuente o pagar una suscripción mensual?",
+    "slug": "codigo-fuente-vs-suscripcion",
+    "status": "published",
+    "published_at": "2026-07-30",
+    "excerpt": "Comparamos costes a 3 años, control de los datos y posibilidad de personalizar. Depende de cuánto quieras adaptarlo.",
+    "body": "Un software por suscripción cuesta poco al principio, pero a los tres años suele superar con creces el precio de un sistema comprado una sola vez.\n\nCon el código fuente tú decides dónde se aloja, quién accede a los datos y qué funciones añades. A cambio, asumes la instalación y las copias de seguridad (o nos las encargas).\n\nNuestra recomendación: si tu proceso es estándar y no piensas tocar nada, una suscripción puede bastar. Si necesitas adaptarlo a tu negocio, un sistema con código fuente se paga solo en pocos meses."
+  },
+  {
+    "title": "Cinco automatizaciones con WhatsApp que ahorran horas cada semana",
+    "slug": "automatizaciones-whatsapp",
+    "status": "published",
+    "published_at": "2026-06-18",
+    "excerpt": "Pedidos, recordatorios de citas, seguimiento de cobros, catálogo interactivo y encuestas: casos reales con nuestros bots.",
+    "body": "WhatsApp es el canal donde ya están tus clientes. Estas son las cinco automatizaciones que más usan quienes compran nuestros sistemas:\n\n1. Toma de pedidos con menú interactivo y resumen automático.\n2. Recordatorio de cita 24 horas antes, con opción de confirmar o reprogramar.\n3. Aviso de factura vencida con enlace de pago.\n4. Catálogo con fotos y precios que se actualiza solo desde el panel.\n5. Encuesta de satisfacción después de cada compra.\n\nTodas se configuran desde un único archivo y funcionan con la API oficial de WhatsApp Cloud."
+  }
+]
