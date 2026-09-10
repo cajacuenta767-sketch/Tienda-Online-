@@ -1,6 +1,6 @@
 <%- include('../partials/head', { bodyClass: 'preview-body' }) %>
 <div class="preview-bar">
-  <a class="nav__logo" href="/"><img src="/img/logo.svg" alt="" width="26" height="26"><span><%= storeName %></span></a>
+  <a class="nav__logo" href="/"><img src="/img/logo.svg" alt="" width="26" height="26"><span class="wordmark"><%- storeName.replace(/^(Dev)(.*)$/i, '$1<b>$2</b>') %></span></a>
   <div class="preview-bar__title"><strong><%= product.title %></strong> <span class="badge badge--version">v<%= product.version %></span></div>
   <div class="preview-bar__actions">
     <%- include('../partials/price', { product }) %>

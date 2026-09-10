@@ -5,7 +5,7 @@
   <div class="container navbar__inner">
     <a class="nav__logo" href="/" aria-label="<%= storeName %> — inicio">
       <img src="/img/logo.svg" alt="" width="32" height="32">
-      <span><%= storeName %></span>
+      <span class="wordmark"><%- storeName.replace(/^(Dev)(.*)$/i, '$1<b>$2</b>') %></span>
     </a>
     <nav class="nav__links" aria-label="Principal">
       <div class="nav__dropdown" data-dropdown>

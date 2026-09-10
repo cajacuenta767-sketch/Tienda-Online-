@@ -1,6 +1,6 @@
 'use strict';
-// Genera "capturas de pantalla" SVG de 1280x800 con el look del tema Ámbar Terminal.
-const T = { bg: '#0B1220', surface: '#111A2E', surface2: '#16213A', border: '#223050', text: '#E7ECF5', muted: '#93A0B8', amber: '#F5A524', mint: '#2DD4BF', red: '#F26D6D' };
+// Genera "capturas de pantalla" SVG de 1280x800 con la paleta Azul océano (claro).
+const T = { bg: '#F8FAFC', surface: '#FFFFFF', surface2: '#EEF2F7', border: '#E2E8F0', text: '#0F172A', muted: '#64748B', amber: '#2563EB', mint: '#06B6D4', red: '#F43F5E' };
 
 function esc(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -44,7 +44,7 @@ function table(title, seed) {
   return `${chrome(title)}
   <rect x="0" y="44" width="1280" height="64" fill="${T.surface}"/>
   <text x="32" y="84" font-family="sans-serif" font-size="20" font-weight="700" fill="${T.text}">${esc(title)}</text>
-  <rect x="980" y="62" width="120" height="30" rx="6" fill="${T.amber}"/><text x="1040" y="82" font-family="sans-serif" font-size="13" font-weight="700" fill="${T.bg}" text-anchor="middle">+ Nuevo</text>
+  <rect x="980" y="62" width="120" height="30" rx="6" fill="${T.amber}"/><text x="1040" y="82" font-family="sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">+ Nuevo</text>
   <rect x="1116" y="62" width="132" height="30" rx="6" fill="none" stroke="${T.border}"/><text x="1182" y="82" font-family="sans-serif" font-size="13" fill="${T.muted}" text-anchor="middle">Exportar</text>
   <rect x="32" y="132" width="1216" height="620" rx="10" fill="${T.surface}" stroke="${T.border}"/>
   <rect x="32" y="132" width="1216" height="44" rx="10" fill="${T.surface2}"/>
