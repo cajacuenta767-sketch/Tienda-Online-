@@ -1,0 +1,78 @@
+<% if (settings.promo_banner_active === '1' && settings.promo_banner_text) { %>
+<div class="promo-banner"><div class="container"><span><%= settings.promo_banner_text %></span> <a href="/tienda">Ver ofertas →</a></div></div>
+<% } %>
+<header class="navbar">
+  <div class="container navbar__inner">
+    <a class="nav__logo" href="/" aria-label="<%= storeName %> — inicio">
+      <img src="/img/logo.svg" alt="" width="30" height="30">
+      <span><%= storeName %></span>
+    </a>
+    <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-mobile" data-nav-toggle>
+      <span class="sr-only">Menú</span><span class="nav__burger" aria-hidden="true"></span>
+    </button>
+    <nav class="nav__links" aria-label="Principal">
+      <a href="/" class="<%= isActive('/') ? 'is-active' : '' %>">Inicio</a>
+      <div class="nav__dropdown" data-dropdown>
+        <button type="button" class="<%= isActive('/tienda') ? 'is-active' : '' %>" aria-haspopup="true" aria-expanded="false">Tienda <span class="caret" aria-hidden="true">▾</span></button>
+        <div class="nav__menu">
+          <a href="/tienda">Todos los productos</a>
+          <% navCategories.forEach(function (c) { %>
+            <a href="/tienda/categoria/<%= c.slug %>"><%= c.name %> <small><%= c.product_count %></small></a>
+          <% }) %>
+        </div>
+      </div>
+      <a href="/nuevos" class="<%= isActive('/nuevos') ? 'is-active' : '' %>">Nuevos</a>
+      <a href="/actualizaciones" class="<%= isActive('/actualizaciones') ? 'is-active' : '' %>">Actualizaciones</a>
+      <a href="/membresia" class="<%= isActive('/membresia') ? 'is-active' : '' %>">Membresía</a>
+      <a href="/nosotros" class="<%= isActive('/nosotros') ? 'is-active' : '' %>">Nosotros</a>
+      <a href="/contacto" class="<%= isActive('/contacto') ? 'is-active' : '' %>">Contacto</a>
+    </nav>
+    <div class="nav__actions">
+      <form class="nav__search" action="/tienda" method="get" role="search">
+        <label class="sr-only" for="nav-q">Buscar</label>
+        <input id="nav-q" type="search" name="q" placeholder="Buscar sistemas, plantillas…" value="<%= typeof q !== 'undefined' ? q : '' %>">
+        <button type="submit" aria-label="Buscar">⌕</button>
+      </form>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema"><span class="theme-toggle__icon" aria-hidden="true"></span></button>
+      <a class="nav__cart" href="/carrito" aria-label="Carrito (<%= cartCount %>)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M6 6 5 3H2"/></svg>
+        <% if (cartCount > 0) { %><span class="cart-badge"><%= cartCount %></span><% } %>
+      </a>
+      <% if (currentUser) { %>
+        <div class="nav__dropdown nav__dropdown--right" data-dropdown>
+          <button type="button" class="nav__user" aria-haspopup="true" aria-expanded="false"><span class="avatar" aria-hidden="true"><%= currentUser.name.charAt(0).toUpperCase() %></span> <span class="nav__user-name"><%= currentUser.name.split(' ')[0] %></span> <span class="caret" aria-hidden="true">▾</span></button>
+          <div class="nav__menu">
+            <a href="/cuenta">Mi cuenta</a>
+            <a href="/cuenta?tab=descargas">Mis descargas</a>
+            <% if (currentUser.role === 'admin') { %><a href="/admin">Panel de administración</a><% } %>
+            <form method="post" action="/logout"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit">Cerrar sesión</button></form>
+          </div>
+        </div>
+      <% } else { %>
+        <a class="btn btn--ghost btn--sm" href="/login">Ingresar</a>
+        <a class="btn btn--primary btn--sm" href="/registro">Crear cuenta</a>
+      <% } %>
+    </div>
+  </div>
+  <div class="nav__mobile" id="nav-mobile" hidden>
+    <form class="nav__search nav__search--mobile" action="/tienda" method="get"><input type="search" name="q" placeholder="Buscar…" aria-label="Buscar"><button type="submit">⌕</button></form>
+    <a href="/">Inicio</a>
+    <a href="/tienda">Tienda</a>
+    <% navCategories.forEach(function (c) { %><a class="nav__mobile-sub" href="/tienda/categoria/<%= c.slug %>"><%= c.name %></a><% }) %>
+    <a href="/nuevos">Nuevos lanzamientos</a>
+    <a href="/actualizaciones">Actualizaciones</a>
+    <a href="/membresia">Membresía</a>
+    <a href="/nosotros">Nosotros</a>
+    <a href="/contacto">Contacto</a>
+    <% if (currentUser) { %>
+      <a href="/cuenta">Mi cuenta</a>
+      <% if (currentUser.role === 'admin') { %><a href="/admin">Panel de administración</a><% } %>
+      <form method="post" action="/logout"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="btn btn--secondary btn--block">Cerrar sesión</button></form>
+    <% } else { %>
+      <a href="/login">Ingresar</a>
+      <a href="/registro">Crear cuenta</a>
+    <% } %>
+  </div>
+</header>
+<main id="main">
+<%- include('flash') %>

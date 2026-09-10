@@ -1,0 +1,16 @@
+<%- include('../../partials/admin/head') %>
+<div class="admin-toolbar"><span class="text-muted">Los planes activos aparecen en /membresia y en el inicio.</span><a class="btn btn--primary" href="/admin/planes/nuevo">+ Nuevo plan</a></div>
+<div class="table-wrap"><table class="table">
+  <thead><tr><th>Plan</th><th>Precio</th><th>Duración</th><th>Estado</th><th>Orden</th><th></th></tr></thead>
+  <tbody>
+    <% plans.forEach(function (p) { %>
+      <tr><td><strong><%= p.name %></strong> <% if (p.is_featured) { %><span class="badge badge--sale">Destacado</span><% } %><br><small class="mono text-muted"><%= p.slug %></small></td>
+        <td class="mono"><%= money(p.price_cents) %></td><td><%= p.duration_days ? p.duration_days + ' días' : 'Vitalicia' %></td>
+        <td><span class="badge badge--status-<%= p.is_active ? 'paid' : 'cancelled' %>"><%= p.is_active ? 'Activo' : 'Inactivo' %></span></td><td class="mono"><%= p.sort_order %></td>
+        <td class="cluster cluster--tight"><a class="btn btn--secondary btn--sm" href="/admin/planes/<%= p.id %>/editar">Editar</a>
+          <form method="post" action="/admin/planes/<%= p.id %>/eliminar" data-confirm="¿Eliminar el plan «<%= p.name %>»?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--danger btn--sm" type="submit">✕</button></form></td></tr>
+    <% }) %>
+    <% if (!plans.length) { %><tr><td colspan="6" class="text-muted">No hay planes.</td></tr><% } %>
+  </tbody>
+</table></div>
+<%- include('../../partials/admin/footer') %>

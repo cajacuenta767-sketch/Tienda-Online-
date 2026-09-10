@@ -1,0 +1,101 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<section class="page-head">
+  <div class="container page-head__row">
+    <div><p class="eyebrow">Hola, <%= currentUser.name %></p><h1>Mi cuenta</h1></div>
+    <% if (membership) { %><span class="badge badge--status-paid">Membresía <%= membership.plan_name %> activa</span><% } else { %><a class="btn btn--secondary btn--sm" href="/membresia">Activar membresía</a><% } %>
+  </div>
+</section>
+<section class="section section--tight">
+  <div class="container">
+    <div class="tabs" data-tabs>
+      <div class="tabs__list" role="tablist">
+        <button class="tabs__tab" role="tab" data-tab="compras" aria-selected="<%= tab === 'compras' %>">Compras <span class="count"><%= myOrders.length %></span></button>
+        <button class="tabs__tab" role="tab" data-tab="descargas" aria-selected="<%= tab === 'descargas' %>">Descargas <span class="count"><%= downloadable.length %></span></button>
+        <button class="tabs__tab" role="tab" data-tab="membresia" aria-selected="<%= tab === 'membresia' %>">Membresía</button>
+        <button class="tabs__tab" role="tab" data-tab="perfil" aria-selected="<%= tab === 'perfil' %>">Perfil</button>
+      </div>
+
+      <div class="tabs__panel" data-panel="compras" <%= tab !== 'compras' ? 'hidden' : '' %>>
+        <% if (myOrders.length) { %>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>Referencia</th><th>Fecha</th><th>Productos</th><th>Método</th><th>Total</th><th>Estado</th><th></th></tr></thead>
+            <tbody>
+              <% myOrders.forEach(function (o) { %>
+                <tr>
+                  <td class="mono"><%= o.reference %></td>
+                  <td><%= fmtDateTime(o.created_at) %></td>
+                  <td><%= o.items.map(i => i.title).join(', ') %></td>
+                  <td><%= providerLabel(o.provider) %></td>
+                  <td class="mono"><%= money(o.amount_cents, o.currency) %></td>
+                  <td><span class="badge badge--status-<%= o.status %>"><%= statusLabel(o.status) %></span></td>
+                  <td><a class="btn btn--ghost btn--sm" href="/pedidos/<%= o.id %>">Ver</a></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+        <% } else { %>
+          <div class="empty-state"><p class="mono">// sin compras</p><h2>Todavía no tienes pedidos</h2><a class="btn btn--primary" href="/tienda">Explorar la tienda</a></div>
+        <% } %>
+      </div>
+
+      <div class="tabs__panel" data-panel="descargas" <%= tab !== 'descargas' ? 'hidden' : '' %>>
+        <% if (downloadable.length) { %>
+        <div class="grid grid-2">
+          <% downloadable.forEach(function (p) { %>
+            <div class="download-card">
+              <img src="<%= p.image || '/img/placeholder.svg' %>" alt="" width="160" height="100">
+              <div class="download-card__body">
+                <a class="download-card__title" href="/producto/<%= p.slug %>"><%= p.title %></a>
+                <div class="cluster"><span class="badge badge--version">v<%= p.version %></span><% if (p.viaMembership) { %><span class="badge badge--new">Incluido en membresía</span><% } %></div>
+              </div>
+              <% if (p.file_name) { %><a class="btn btn--mint btn--sm" href="/descargar/<%= p.id %>">Descargar</a><% } else { %><span class="text-muted">Sin archivo</span><% } %>
+            </div>
+          <% }) %>
+        </div>
+        <% } else { %>
+          <div class="empty-state"><p class="mono">// sin descargas</p><h2>Aún no tienes productos para descargar</h2><p>Compra un producto o activa una membresía para acceder a todo el catálogo.</p><a class="btn btn--primary" href="/membresia">Ver membresías</a></div>
+        <% } %>
+      </div>
+
+      <div class="tabs__panel" data-panel="membresia" <%= tab !== 'membresia' ? 'hidden' : '' %>>
+        <% if (membership) { %>
+          <div class="detail-block detail-block--card">
+            <h2>Plan <%= membership.plan_name %></h2>
+            <p>Activa desde el <strong><%= fmtDateTime(membership.starts_at) %></strong>.
+              <% if (membership.ends_at) { %>Vence el <strong><%= fmtDateTime(membership.ends_at) %></strong>.<% } else { %><span class="text-mint">Acceso vitalicio.</span><% } %></p>
+            <a class="btn btn--secondary" href="/cuenta?tab=descargas">Ir a mis descargas</a>
+          </div>
+        <% } else { %>
+          <div class="empty-state"><p class="mono">// sin membresía</p><h2>No tienes una membresía activa</h2><p>Con la membresía descargas todo el catálogo y las actualizaciones futuras.</p><a class="btn btn--primary" href="/membresia">Ver planes</a></div>
+        <% } %>
+        <% if (history.length) { %>
+          <h3 class="mt-4">Historial</h3>
+          <div class="table-wrap"><table class="table table--compact"><thead><tr><th>Plan</th><th>Inicio</th><th>Fin</th><th>Estado</th></tr></thead><tbody>
+            <% history.forEach(function (m) { %><tr><td><%= m.plan_name %></td><td><%= fmtDate(m.starts_at) %></td><td><%= m.ends_at ? fmtDate(m.ends_at) : 'Vitalicia' %></td><td><%= m.status %></td></tr><% }) %>
+          </tbody></table></div>
+        <% } %>
+      </div>
+
+      <div class="tabs__panel" data-panel="perfil" <%= tab !== 'perfil' ? 'hidden' : '' %>>
+        <div class="two-col two-col--even">
+          <div class="detail-block detail-block--card">
+            <h2>Datos</h2>
+            <ul class="buy-box__facts"><li><span>Nombre</span><strong><%= currentUser.name %></strong></li><li><span>Correo</span><strong><%= currentUser.email %></strong></li><li><span>Rol</span><strong><%= currentUser.role %></strong></li></ul>
+          </div>
+          <form class="form detail-block detail-block--card" method="post" action="/cuenta/password">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <h2>Cambiar contraseña</h2>
+            <div class="field"><label class="label" for="p-cur">Contraseña actual</label><input class="input" id="p-cur" name="current_password" type="password" autocomplete="current-password" required></div>
+            <div class="field"><label class="label" for="p-new">Nueva contraseña</label><input class="input" id="p-new" name="password" type="password" autocomplete="new-password" minlength="8" required></div>
+            <div class="field"><label class="label" for="p-new2">Repetir nueva contraseña</label><input class="input" id="p-new2" name="password_confirm" type="password" autocomplete="new-password" required></div>
+            <div class="form__actions"><button class="btn btn--primary" type="submit">Guardar</button></div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<%- include('../partials/footer') %>

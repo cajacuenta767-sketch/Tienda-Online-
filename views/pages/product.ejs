@@ -1,0 +1,114 @@
+<%- include('../partials/head', { metaDescription: product.short_description }) %>
+<%- include('../partials/header') %>
+<% const pct = discountPct(product); const main = product.images[0]; %>
+<section class="page-head page-head--compact">
+  <div class="container">
+    <nav class="breadcrumbs" aria-label="Ruta"><a href="/">Inicio</a><span>/</span><a href="/tienda">Tienda</a><% if (product.category_name) { %><span>/</span><a href="/tienda/categoria/<%= product.category_slug %>"><%= product.category_name %></a><% } %><span>/</span><span aria-current="page"><%= product.title %></span></nav>
+  </div>
+</section>
+<section class="section section--tight product-page">
+  <div class="container two-col">
+    <div class="gallery" data-gallery>
+      <div class="gallery__main">
+        <img src="<%= main ? main.path : '/img/placeholder.svg' %>" alt="<%= main ? main.alt : product.title %>" width="1280" height="800" data-gallery-main>
+        <% if (!product.is_active) { %><span class="badge badge--status-cancelled gallery__flag">Inactivo (solo visible para admin)</span><% } %>
+      </div>
+      <% if (product.images.length > 1) { %>
+      <div class="gallery__thumbs">
+        <% product.images.forEach(function (img, i) { %>
+          <button type="button" class="gallery__thumb <%= i === 0 ? 'is-active' : '' %>" data-src="<%= img.path %>" data-alt="<%= img.alt %>" aria-label="Captura <%= i + 1 %>"><img src="<%= img.path %>" alt="" loading="lazy"></button>
+        <% }) %>
+      </div>
+      <% } %>
+    </div>
+    <aside class="buy-box">
+      <div class="cluster">
+        <% if (product.category_name) { %><a class="badge badge--cat" href="/tienda/categoria/<%= product.category_slug %>"><%= product.category_name %></a><% } %>
+        <span class="badge badge--version">v<%= product.version %></span>
+        <% if (product.is_new) { %><span class="badge badge--new">Nuevo</span><% } %>
+        <% if (pct) { %><span class="badge badge--sale">-<%= pct %>% dto.</span><% } %>
+      </div>
+      <h1 class="buy-box__title"><%= product.title %></h1>
+      <p class="buy-box__desc"><%= product.short_description %></p>
+      <div class="buy-box__price"><%- include('../partials/price', { product, size: 'lg' }) %></div>
+      <div class="buy-box__actions">
+        <% if (canDownload) { %>
+          <a class="btn btn--mint btn--lg btn--block" href="/descargar/<%= product.id %>">Descargar v<%= product.version %></a>
+          <p class="help text-muted"><%= hasMembership ? 'Incluido en tu membresía.' : 'Ya compraste este producto.' %></p>
+        <% } else { %>
+          <a class="btn btn--primary btn--lg btn--block" href="/pagar?producto=<%= product.slug %>">Comprar ahora</a>
+          <form method="post" action="/carrito/agregar/<%= product.id %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--secondary btn--block" type="submit">Añadir al carrito</button></form>
+        <% } %>
+        <% if (product.demo_url) { %><a class="btn btn--ghost btn--block" href="/demo/<%= product.slug %>">▶ Ver demo en vivo</a><% } %>
+        <% if (waEnabled) { %><a class="btn btn--whatsapp btn--block" href="<%= waLink(product) %>" target="_blank" rel="noopener">Consultar por WhatsApp</a><% } %>
+      </div>
+      <ul class="buy-box__facts">
+        <li><span>Licencia</span><strong><%= product.license %></strong></li>
+        <li><span>Actualizaciones</span><strong>Incluidas de por vida</strong></li>
+        <li><span>Entrega</span><strong>Descarga inmediata (.zip)</strong></li>
+        <li><span>Membresía</span><strong class="text-mint">Incluido en todos los planes</strong></li>
+        <li><span>Ventas</span><strong class="mono"><%= product.sales_count %></strong></li>
+      </ul>
+      <% if (product.tags.length) { %>
+      <div class="cluster buy-box__tags">
+        <% product.tags.forEach(function (t) { %><a class="tag-chip tag-chip--sm" href="/etiqueta/<%= t.slug %>">#<%= t.name %></a><% }) %>
+      </div>
+      <% } %>
+    </aside>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="container product-details">
+    <div class="product-details__main">
+      <article class="detail-block">
+        <h2>Descripción</h2>
+        <div class="prose"><%- nl2paragraphs(product.long_description) %></div>
+      </article>
+      <% if (product.features) { %>
+      <article class="detail-block">
+        <h2>Características</h2>
+        <%- nl2list(product.features) %>
+      </article>
+      <% } %>
+      <% if (product.changelog.length) { %>
+      <article class="detail-block">
+        <h2>Historial de versiones</h2>
+        <ol class="changelog">
+          <% product.changelog.forEach(function (c) { %>
+            <li class="changelog__item">
+              <div class="changelog__head"><span class="badge badge--version">v<%= c.version %></span><time class="mono text-muted" datetime="<%= c.released_at %>"><%= fmtDate(c.released_at) %></time></div>
+              <%- nl2list(c.notes) %>
+            </li>
+          <% }) %>
+        </ol>
+      </article>
+      <% } %>
+    </div>
+    <div class="product-details__side">
+      <% if (product.requirements) { %>
+      <article class="detail-block detail-block--card">
+        <h2>Requisitos / Stack</h2>
+        <%- nl2list(product.requirements) %>
+      </article>
+      <% } %>
+      <article class="detail-block detail-block--card">
+        <h2>Licencia</h2>
+        <p><%= product.license %>.</p>
+        <p class="text-muted">Puedes modificar el código y usarlo en un proyecto propio o de un cliente. No se permite la reventa o redistribución del código fuente. <a href="/terminos">Leer términos completos →</a></p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<% if (related.length) { %>
+<section class="section section--alt">
+  <div class="container">
+    <div class="section__head"><div><p class="eyebrow">También te puede interesar</p><h2>Productos relacionados</h2></div></div>
+    <div class="grid grid-4">
+      <% related.forEach(function (product) { %><%- include('../partials/product-card', { product }) %><% }) %>
+    </div>
+  </div>
+</section>
+<% } %>
+<%- include('../partials/footer') %>

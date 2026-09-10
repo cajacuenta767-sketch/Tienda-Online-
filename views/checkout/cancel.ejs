@@ -1,0 +1,13 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<section class="section">
+  <div class="container narrow">
+    <div class="result-card">
+      <p class="mono text-muted">// pago cancelado</p>
+      <h1>No se completó el pago</h1>
+      <p class="text-muted">No se realizó ningún cargo.<% if (order) { %> Tu pedido <span class="mono"><%= order.reference %></span> sigue pendiente: puedes reintentarlo o elegir otro método.<% } %></p>
+      <div class="cluster"><% if (order) { %><a class="btn btn--primary" href="/pedidos/<%= order.id %>">Ver pedido</a><% } %><a class="btn btn--secondary" href="/tienda">Volver a la tienda</a></div>
+    </div>
+  </div>
+</section>
+<%- include('../partials/footer') %>

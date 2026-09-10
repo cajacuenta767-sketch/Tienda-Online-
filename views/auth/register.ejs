@@ -1,0 +1,22 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<section class="section auth-section">
+  <div class="container">
+    <form class="form auth-card" method="post" action="/registro" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="next" value="<%= next %>">
+      <p class="eyebrow">Solo toma un minuto</p>
+      <h1>Crear cuenta</h1>
+      <% if (typeof errors !== 'undefined' && errors.length) { %><div class="alert alert--error"><ul><% errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul></div><% } %>
+      <div class="field"><label class="label" for="r-name">Nombre</label><input class="input" id="r-name" name="name" autocomplete="name" required value="<%= form.name || '' %>"></div>
+      <div class="field"><label class="label" for="r-email">Correo</label><input class="input" id="r-email" name="email" type="email" autocomplete="email" required value="<%= form.email || '' %>"></div>
+      <div class="form-grid">
+        <div class="field"><label class="label" for="r-pass">Contraseña</label><input class="input" id="r-pass" name="password" type="password" autocomplete="new-password" minlength="8" required><span class="help">Mínimo 8 caracteres.</span></div>
+        <div class="field"><label class="label" for="r-pass2">Repetir contraseña</label><input class="input" id="r-pass2" name="password_confirm" type="password" autocomplete="new-password" required></div>
+      </div>
+      <button class="btn btn--primary btn--block btn--lg" type="submit">Crear cuenta</button>
+      <p class="text-muted auth-card__alt">Al registrarte aceptas los <a href="/terminos">términos y licencias</a>. ¿Ya tienes cuenta? <a href="/login">Ingresar</a></p>
+    </form>
+  </div>
+</section>
+<%- include('../partials/footer') %>

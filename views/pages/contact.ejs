@@ -1,0 +1,40 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<section class="page-head">
+  <div class="container">
+    <nav class="breadcrumbs" aria-label="Ruta"><a href="/">Inicio</a><span>/</span><span aria-current="page">Contacto</span></nav>
+    <div class="page-head__row"><div><h1>Contacto</h1><p class="text-muted">Soporte, cotizaciones y consultas sobre licencias. Respondemos en menos de 24 horas.</p></div></div>
+  </div>
+</section>
+<section class="section section--tight">
+  <div class="container contact-grid">
+    <div class="stack">
+      <% if (waEnabled) { %>
+      <a class="contact-card" href="https://wa.me/<%= settings.whatsapp_number %>?text=<%= encodeURIComponent('Hola ' + storeName + ', tengo una consulta.') %>" target="_blank" rel="noopener">
+        <img src="/img/icons/whatsapp.svg" alt="" width="28" height="28"><div><strong>WhatsApp</strong><span class="mono">+<%= settings.whatsapp_number %></span><small class="text-muted">La vía más rápida. Lunes a sábado.</small></div>
+      </a>
+      <% } %>
+      <% if (settings.support_email) { %>
+      <a class="contact-card" href="mailto:<%= settings.support_email %>">
+        <span class="contact-card__icon mono">@</span><div><strong>Correo</strong><span class="mono"><%= settings.support_email %></span><small class="text-muted">Para soporte técnico y facturas.</small></div>
+      </a>
+      <% } %>
+      <div class="contact-card contact-card--static">
+        <span class="contact-card__icon mono">?</span><div><strong>Antes de escribir</strong><span>Revisa los <a href="/terminos">términos y licencias</a> y el <a href="/actualizaciones">historial de actualizaciones</a>.</span></div>
+      </div>
+    </div>
+    <form class="form card-form" method="post" action="/contacto" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <% if (typeof errors !== 'undefined' && errors.length) { %><div class="alert alert--error"><ul><% errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul></div><% } %>
+      <div class="form-grid">
+        <div class="field"><label class="label" for="c-name">Nombre</label><input class="input" id="c-name" name="name" required value="<%= form.name || '' %>"></div>
+        <div class="field"><label class="label" for="c-email">Correo</label><input class="input" id="c-email" name="email" type="email" required value="<%= form.email || '' %>"></div>
+      </div>
+      <div class="field"><label class="label" for="c-subject">Asunto</label><input class="input" id="c-subject" name="subject" value="<%= form.subject || '' %>" placeholder="Soporte, cotización, licencia…"></div>
+      <div class="field"><label class="label" for="c-message">Mensaje</label><textarea class="textarea" id="c-message" name="message" rows="6" required><%= form.message || '' %></textarea></div>
+      <div class="form__actions"><button class="btn btn--primary" type="submit">Enviar mensaje</button></div>
+    </form>
+  </div>
+</section>
+<%- include('../partials/footer') %>

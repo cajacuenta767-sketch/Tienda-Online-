@@ -1,0 +1,30 @@
+<%- include('../partials/admin/head') %>
+<div class="grid grid-4 stats-grid">
+  <div class="stat"><span class="stat__label">Ingresos (pagado)</span><span class="stat__value mono"><%= money(stats.revenue) %></span><span class="stat__sub"><%= stats.paidOrders %> pedidos pagados</span></div>
+  <div class="stat"><span class="stat__label">Pedidos pendientes</span><span class="stat__value mono <%= stats.pendingOrders ? 'text-amber' : '' %>"><%= stats.pendingOrders %></span><span class="stat__sub"><a href="/admin/pedidos?status=pending">Revisar</a></span></div>
+  <div class="stat"><span class="stat__label">Productos</span><span class="stat__value mono"><%= stats.products.active %></span><span class="stat__sub"><%= stats.products.total %> en total · <%= stats.products.downloads %> descargas</span></div>
+  <div class="stat"><span class="stat__label">Usuarios</span><span class="stat__value mono"><%= stats.users %></span><span class="stat__sub"><%= stats.memberships %> membresías activas<% if (stats.unread) { %> · <a href="/admin/mensajes"><%= stats.unread %> mensajes sin leer</a><% } %></span></div>
+</div>
+<% if (pendingManual.length) { %>
+<section class="admin-block">
+  <div class="section__head"><h2>Pagos manuales por confirmar</h2><span class="badge badge--sale"><%= pendingManual.length %></span></div>
+  <div class="table-wrap"><table class="table table--compact">
+    <thead><tr><th>Ref.</th><th>Cliente</th><th>Método</th><th>Monto</th><th>Aviso de pago</th><th></th></tr></thead>
+    <tbody><% pendingManual.forEach(function (o) { %>
+      <tr><td class="mono"><%= o.reference %></td><td><%= o.user_name %> <small class="text-muted"><%= o.user_email %></small></td><td><%= providerLabel(o.provider) %></td><td class="mono"><%= money(o.amount_cents) %><% if (o.data.btc_amount) { %> <small class="text-muted">(<%= o.data.btc_amount %> BTC)</small><% } %></td>
+      <td><% if (o.data.claimed_at) { %><span class="badge badge--new">Cliente confirmó</span> <small class="mono"><%= o.data.txid || '' %></small><% } else { %><span class="text-muted">Sin aviso</span><% } %></td>
+      <td><a class="btn btn--primary btn--sm" href="/admin/pedidos/<%= o.id %>">Revisar</a></td></tr>
+    <% }) %></tbody>
+  </table></div>
+</section>
+<% } %>
+<section class="admin-block">
+  <div class="section__head"><h2>Últimos pedidos</h2><a class="link-more" href="/admin/pedidos">Ver todos →</a></div>
+  <div class="table-wrap"><table class="table table--compact">
+    <thead><tr><th>Ref.</th><th>Fecha</th><th>Cliente</th><th>Método</th><th>Monto</th><th>Estado</th></tr></thead>
+    <tbody><% recentOrders.forEach(function (o) { %>
+      <tr><td><a class="mono" href="/admin/pedidos/<%= o.id %>"><%= o.reference %></a></td><td><%= fmtDateTime(o.created_at) %></td><td><%= o.user_email || '—' %></td><td><%= providerLabel(o.provider) %></td><td class="mono"><%= money(o.amount_cents) %></td><td><span class="badge badge--status-<%= o.status %>"><%= statusLabel(o.status) %></span></td></tr>
+    <% }) %><% if (!recentOrders.length) { %><tr><td colspan="6" class="text-muted">Sin pedidos todavía.</td></tr><% } %></tbody>
+  </table></div>
+</section>
+<%- include('../partials/admin/footer') %>

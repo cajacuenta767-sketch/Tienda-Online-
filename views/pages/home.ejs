@@ -1,0 +1,145 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+
+<section class="hero">
+  <div class="container hero__grid">
+    <div class="hero__copy">
+      <p class="eyebrow"><%= settings.hero_eyebrow %></p>
+      <h1 class="hero__title"><%= settings.hero_title %></h1>
+      <p class="hero__subtitle"><%= settings.hero_subtitle %></p>
+      <div class="cluster hero__cta">
+        <a class="btn btn--primary btn--lg" href="/tienda">Explorar tienda</a>
+        <a class="btn btn--secondary btn--lg" href="/membresia">Ver membresías</a>
+      </div>
+      <dl class="hero__stats">
+        <div><dt><%= stats.products %></dt><dd>sistemas y plantillas</dd></div>
+        <div><dt><%= stats.updates %></dt><dd>actualizaciones publicadas</dd></div>
+        <div><dt>24 h</dt><dd>respuesta por WhatsApp</dd></div>
+      </dl>
+    </div>
+    <div class="hero__visual">
+      <div class="terminal" aria-hidden="true">
+        <div class="terminal__bar"><span></span><span></span><span></span><em>bash — devmarket</em></div>
+<pre class="terminal__body"><span class="t-prompt">$</span> <span class="t-cmd">git clone https://devmarket/sistema-inventario-ventas.git</span>
+<span class="t-out">Clonando en 'sistema-inventario-ventas'... listo.</span>
+<span class="t-prompt">$</span> <span class="t-cmd">cd sistema-inventario-ventas &amp;&amp; composer install</span>
+<span class="t-out">Instalando 42 dependencias</span> <span class="t-ok">✔</span>
+<span class="t-prompt">$</span> <span class="t-cmd">php artisan migrate --seed</span>
+<span class="t-out">Migrated: 2026_01_01_create_products_table</span>
+<span class="t-out">Migrated: 2026_01_02_create_sales_table</span>
+<span class="t-prompt">$</span> <span class="t-cmd">php artisan serve</span>
+<span class="t-ok">➜ Servidor listo en http://127.0.0.1:8000</span>
+<span class="t-out">➜ Código fuente completo · demo en vivo · actualizaciones incluidas</span>
+<span class="t-prompt">$</span> <span class="t-cursor">▌</span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<% if (featured.length) { %>
+<section class="section">
+  <div class="container">
+    <div class="section__head">
+      <div><p class="eyebrow">Selección</p><h2>Productos destacados</h2></div>
+      <a class="link-more" href="/tienda">Ver toda la tienda →</a>
+    </div>
+    <div class="grid grid-4">
+      <% featured.forEach(function (product) { %><%- include('../partials/product-card', { product }) %><% }) %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<section class="section section--alt">
+  <div class="container">
+    <div class="section__head">
+      <div><p class="eyebrow">Explora</p><h2>Categorías</h2></div>
+    </div>
+    <div class="grid grid-3">
+      <% categories.forEach(function (c) { %>
+        <a class="category-card" href="/tienda/categoria/<%= c.slug %>">
+          <span class="category-card__count mono"><%= c.product_count %></span>
+          <h3><%= c.name %></h3>
+          <p><%= c.description %></p>
+          <span class="link-more">Ver productos →</span>
+        </a>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<% if (newest.length) { %>
+<section class="section">
+  <div class="container">
+    <div class="section__head">
+      <div><p class="eyebrow">Recién publicados</p><h2>Nuevos lanzamientos</h2></div>
+      <a class="link-more" href="/nuevos">Ver todos →</a>
+    </div>
+    <div class="grid grid-4">
+      <% newest.forEach(function (product) { %><%- include('../partials/product-card', { product }) %><% }) %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<% if (plans.length) { %>
+<section class="section section--alt" id="membresia">
+  <div class="container">
+    <div class="section__head">
+      <div><p class="eyebrow">Ahorra</p><h2>Membresía: todo el catálogo por un solo pago</h2></div>
+      <a class="link-more" href="/membresia">Comparar planes →</a>
+    </div>
+    <div class="grid grid-3 plans-grid">
+      <% plans.forEach(function (plan) { %><%- include('../partials/plan-card', { plan }) %><% }) %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<section class="section">
+  <div class="container">
+    <div class="section__head"><div><p class="eyebrow">Por qué elegirnos</p><h2>¿Por qué <%= storeName %>?</h2></div></div>
+    <div class="grid grid-4 features-grid">
+      <div class="feature-tile"><span class="feature-tile__icon mono">&lt;/&gt;</span><h3>Código fuente completo</h3><p>Sin ofuscación ni llamadas a servidores externos. Modifícalo, adáptalo y hazlo tuyo.</p></div>
+      <div class="feature-tile"><span class="feature-tile__icon mono">v↑</span><h3>Actualizaciones incluidas</h3><p>Cada compra incluye las versiones futuras del producto. Revisa el historial en Actualizaciones.</p></div>
+      <div class="feature-tile"><span class="feature-tile__icon mono">▶</span><h3>Demo en vivo</h3><p>Prueba cada sistema antes de comprar, con datos reales de ejemplo y todas sus funciones.</p></div>
+      <div class="feature-tile"><span class="feature-tile__icon mono">@</span><h3>Soporte directo</h3><p>Hablas con quien escribió el código: WhatsApp y correo con respuesta en menos de 24 horas.</p></div>
+    </div>
+  </div>
+</section>
+
+<% if (updates.length) { %>
+<section class="section section--alt">
+  <div class="container">
+    <div class="section__head">
+      <div><p class="eyebrow">Mantenimiento activo</p><h2>Últimas actualizaciones</h2></div>
+      <a class="link-more" href="/actualizaciones">Ver historial →</a>
+    </div>
+    <ul class="update-list">
+      <% updates.forEach(function (u) { %>
+        <li class="update-row">
+          <span class="badge badge--version">v<%= u.version %></span>
+          <a class="update-row__title" href="/producto/<%= u.product_slug %>"><%= u.product_title %></a>
+          <span class="update-row__notes text-muted"><%= truncate(lines(u.notes)[0] || '', 110) %></span>
+          <time class="mono text-muted" datetime="<%= u.released_at %>"><%= fmtDate(u.released_at) %></time>
+        </li>
+      <% }) %>
+    </ul>
+  </div>
+</section>
+<% } %>
+
+<section class="section">
+  <div class="container cta-strip">
+    <div>
+      <h2>¿Necesitas algo a medida?</h2>
+      <p>Adaptamos cualquiera de nuestros sistemas a tu negocio o desarrollamos uno desde cero.</p>
+    </div>
+    <div class="cluster">
+      <% if (waEnabled) { %><a class="btn btn--whatsapp" href="https://wa.me/<%= settings.whatsapp_number %>?text=<%= encodeURIComponent('Hola ' + storeName + ', quiero cotizar un desarrollo a medida.') %>" target="_blank" rel="noopener">Escribir por WhatsApp</a><% } %>
+      <a class="btn btn--secondary" href="/contacto">Formulario de contacto</a>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

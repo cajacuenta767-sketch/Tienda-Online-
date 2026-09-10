@@ -1,0 +1,27 @@
+<% const pct = discountPct(product); %>
+<article class="product-card">
+  <a class="product-card__media" href="/producto/<%= product.slug %>">
+    <img src="<%= product.image || '/img/placeholder.svg' %>" alt="<%= product.title %>" loading="lazy" width="640" height="400">
+    <div class="product-card__badges">
+      <% if (product.is_new) { %><span class="badge badge--new">Nuevo</span><% } %>
+      <% if (pct) { %><span class="badge badge--sale">-<%= pct %>%</span><% } %>
+    </div>
+  </a>
+  <div class="product-card__body">
+    <div class="product-card__meta">
+      <% if (product.category_name) { %><a class="badge badge--cat" href="/tienda/categoria/<%= product.category_slug %>"><%= product.category_name %></a><% } %>
+      <span class="badge badge--version">v<%= product.version %></span>
+    </div>
+    <h3 class="product-card__title"><a href="/producto/<%= product.slug %>"><%= product.title %></a></h3>
+    <p class="product-card__desc truncate-2"><%= product.short_description %></p>
+    <div class="product-card__footer">
+      <%- include('price', { product }) %>
+      <span class="product-card__sales text-muted"><%= product.sales_count %> ventas</span>
+    </div>
+    <div class="product-card__actions">
+      <% if (product.demo_url) { %><a class="btn btn--secondary btn--sm" href="/demo/<%= product.slug %>">Ver demo</a><% } %>
+      <a class="btn btn--ghost btn--sm" href="/producto/<%= product.slug %>">Detalles</a>
+      <a class="btn btn--primary btn--sm" href="/pagar?producto=<%= product.slug %>">Comprar</a>
+    </div>
+  </div>
+</article>

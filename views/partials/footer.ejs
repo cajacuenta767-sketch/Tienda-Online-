@@ -1,0 +1,54 @@
+</main>
+<footer class="footer">
+  <div class="container footer__grid">
+    <div class="footer__brand">
+      <a class="nav__logo" href="/"><img src="/img/logo.svg" alt="" width="28" height="28"><span><%= storeName %></span></a>
+      <p><%= settings.footer_text %></p>
+      <% if (settings.facebook_url || settings.instagram_url || settings.youtube_url) { %>
+      <div class="cluster">
+        <% if (settings.facebook_url) { %><a href="<%= settings.facebook_url %>" rel="noopener" target="_blank">Facebook</a><% } %>
+        <% if (settings.instagram_url) { %><a href="<%= settings.instagram_url %>" rel="noopener" target="_blank">Instagram</a><% } %>
+        <% if (settings.youtube_url) { %><a href="<%= settings.youtube_url %>" rel="noopener" target="_blank">YouTube</a><% } %>
+      </div>
+      <% } %>
+    </div>
+    <div class="footer__col">
+      <h4>Tienda</h4>
+      <a href="/tienda">Todos los productos</a>
+      <% navCategories.forEach(function (c) { %><a href="/tienda/categoria/<%= c.slug %>"><%= c.name %></a><% }) %>
+      <a href="/nuevos">Nuevos lanzamientos</a>
+      <a href="/membresia">Membresía</a>
+    </div>
+    <div class="footer__col">
+      <h4>Ayuda</h4>
+      <a href="/contacto">Contacto</a>
+      <a href="/actualizaciones">Actualizaciones</a>
+      <a href="/terminos">Términos y licencias</a>
+      <a href="/nosotros">Quiénes somos</a>
+      <% if (settings.support_email) { %><a href="mailto:<%= settings.support_email %>"><%= settings.support_email %></a><% } %>
+    </div>
+    <div class="footer__col">
+      <h4>Métodos de pago</h4>
+      <div class="pay-icons">
+        <% providers.forEach(function (p) { %>
+          <span class="pay-icon <%= p.enabled ? '' : 'is-off' %>" title="<%= p.name %><%= p.comingSoon && !p.enabled ? ' (próximamente)' : (p.enabled ? '' : ' (no configurado)') %>">
+            <img src="/img/icons/<%= p.id %>.svg" alt="" width="22" height="22"> <%= p.name.replace(/\s*\(.*\)/, '') %><% if (p.comingSoon && !p.enabled) { %> <small>pronto</small><% } %>
+          </span>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+  <div class="container footer__bottom">
+    <span>© <%= new Date().getFullYear() %> <%= storeName %>. Código con licencia, soporte real.</span>
+    <span class="mono">v1.0.0</span>
+  </div>
+</footer>
+<% if (waEnabled && settings.whatsapp_number) { %>
+<a class="wa-float" href="https://wa.me/<%= settings.whatsapp_number %>?text=<%= encodeURIComponent('Hola ' + storeName + ', tengo una consulta.') %>" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
+  <img src="/img/icons/whatsapp.svg" alt="" width="26" height="26">
+</a>
+<% } %>
+<script src="/js/app.js" defer></script>
+<% if (typeof extraScripts !== 'undefined') { %><%- extraScripts %><% } %>
+</body>
+</html>

@@ -1,0 +1,14 @@
+<article class="plan-card <%= plan.is_featured ? 'plan-card--featured' : '' %>">
+  <% if (plan.is_featured) { %><span class="plan-card__tag">Más popular</span><% } %>
+  <h3 class="plan-card__name"><%= plan.name %></h3>
+  <p class="plan-card__desc"><%= plan.description %></p>
+  <div class="plan-card__price">
+    <span class="plan-card__amount"><%= money(plan.price_cents, plan.currency) %></span>
+    <span class="plan-card__period"><%= plan.duration_days ? (plan.duration_days >= 365 ? '/ año' : `/ ${plan.duration_days} días`) : 'pago único' %></span>
+  </div>
+  <%- nl2list(plan.features) %>
+  <div class="plan-card__actions">
+    <a class="btn <%= plan.is_featured ? 'btn--primary' : 'btn--secondary' %> btn--block" href="/pagar?plan=<%= plan.slug %>">Elegir <%= plan.name %></a>
+    <% if (waEnabled) { %><a class="btn btn--ghost btn--block btn--sm" href="/pago/whatsapp/<%= plan.slug %>?plan=1" target="_blank" rel="noopener">Consultar por WhatsApp</a><% } %>
+  </div>
+</article>

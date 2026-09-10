@@ -1,0 +1,45 @@
+<%- include('../partials/admin/head') %>
+<form class="form admin-form" method="post" action="/admin/ajustes">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div class="admin-form__grid">
+    <div class="stack">
+      <section class="admin-block">
+        <h2>Tienda</h2>
+        <div class="form-grid">
+          <div class="field"><label class="label" for="s-store">Nombre de la tienda</label><input class="input" id="s-store" name="store_name" value="<%= values.store_name %>"></div>
+          <div class="field"><label class="label" for="s-tag">Lema</label><input class="input" id="s-tag" name="tagline" value="<%= values.tagline %>"></div>
+          <div class="field field--span"><label class="label" for="s-foot">Texto del pie de página</label><input class="input" id="s-foot" name="footer_text" value="<%= values.footer_text %>"></div>
+          <div class="field"><label class="label" for="s-fb">Facebook (URL)</label><input class="input" id="s-fb" name="facebook_url" value="<%= values.facebook_url %>"></div>
+          <div class="field"><label class="label" for="s-ig">Instagram (URL)</label><input class="input" id="s-ig" name="instagram_url" value="<%= values.instagram_url %>"></div>
+          <div class="field"><label class="label" for="s-yt">YouTube (URL)</label><input class="input" id="s-yt" name="youtube_url" value="<%= values.youtube_url %>"></div>
+          <div class="field"><label class="label" for="s-terms">Fecha de términos</label><input class="input" id="s-terms" name="terms_updated_at" type="date" value="<%= values.terms_updated_at %>"></div>
+        </div>
+      </section>
+      <section class="admin-block">
+        <h2>Inicio</h2>
+        <div class="form-grid">
+          <div class="field field--span"><label class="label" for="s-eye">Eyebrow del hero</label><input class="input" id="s-eye" name="hero_eyebrow" value="<%= values.hero_eyebrow %>"></div>
+          <div class="field field--span"><label class="label" for="s-h1">Título del hero</label><input class="input" id="s-h1" name="hero_title" value="<%= values.hero_title %>"></div>
+          <div class="field field--span"><label class="label" for="s-sub">Subtítulo del hero</label><textarea class="textarea" id="s-sub" name="hero_subtitle" rows="2"><%= values.hero_subtitle %></textarea></div>
+          <div class="field field--span"><label class="label" for="s-promo">Franja promocional</label><input class="input" id="s-promo" name="promo_banner_text" value="<%= values.promo_banner_text %>"></div>
+          <label class="checkbox field--span"><input type="checkbox" name="promo_banner_active" value="1" <%= values.promo_banner_active === '1' ? 'checked' : '' %>> Mostrar franja promocional</label>
+        </div>
+      </section>
+    </div>
+    <aside class="stack">
+      <section class="admin-block">
+        <h2>Contacto y pagos</h2>
+        <div class="field"><label class="label" for="s-wa">WhatsApp (solo dígitos, con código de país)</label><input class="input mono" id="s-wa" name="whatsapp_number" value="<%= values.whatsapp_number %>" placeholder="51999999999"></div>
+        <div class="field"><label class="label" for="s-mail">Correo de soporte</label><input class="input" id="s-mail" name="support_email" type="email" value="<%= values.support_email %>"></div>
+        <div class="field"><label class="label" for="s-btc">Dirección Bitcoin</label><input class="input mono" id="s-btc" name="btc_address" value="<%= values.btc_address %>" placeholder="bc1q…"><span class="help">Vacío = el método BTC se oculta.</span></div>
+        <div class="field"><label class="label" for="s-rate">Tasa USD por BTC (referencial)</label><input class="input mono" id="s-rate" name="btc_usd_rate" type="number" step="0.01" value="<%= values.btc_usd_rate %>"></div>
+        <div class="field"><label class="label" for="s-cur">Moneda base</label><input class="input mono" id="s-cur" name="currency" value="<%= values.currency %>" readonly></div>
+        <label class="checkbox"><input type="checkbox" name="show_pen" value="1" <%= values.show_pen === '1' ? 'checked' : '' %>> Mostrar precios referenciales en soles (PEN)</label>
+        <div class="field"><label class="label" for="s-pen">Tasa PEN por USD</label><input class="input mono" id="s-pen" name="pen_rate" type="number" step="0.001" value="<%= values.pen_rate %>"></div>
+        <p class="help">Las claves de Stripe, PayPal y Culqi se configuran en el archivo <code>.env</code> del servidor, nunca aquí.</p>
+      </section>
+      <div class="form__actions"><button class="btn btn--primary btn--block btn--lg" type="submit">Guardar ajustes</button></div>
+    </aside>
+  </div>
+</form>
+<%- include('../partials/admin/footer') %>

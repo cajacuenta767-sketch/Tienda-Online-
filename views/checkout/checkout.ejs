@@ -1,0 +1,46 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<% const kindParam = selection.kind === 'product' ? `<input type="hidden" name="producto" value="${selection.ref}">` : selection.kind === 'plan' ? `<input type="hidden" name="plan" value="${selection.ref}">` : ''; %>
+<section class="page-head"><div class="container page-head__row"><div><p class="eyebrow">Último paso</p><h1>Finalizar compra</h1></div><span class="mono text-muted">Pedido a nombre de <%= currentUser.email %></span></div></section>
+<section class="section section--tight checkout-page">
+  <div class="container two-col two-col--reverse">
+    <aside class="detail-block detail-block--card summary-card">
+      <h2>Resumen</h2>
+      <ul class="summary-list">
+        <% items.forEach(function (it) { %><li><span><%= it.title %></span><span class="mono"><%= money(it.unit_cents) %></span></li><% }) %>
+      </ul>
+      <div class="summary-total"><span>Total</span><span class="mono price__current"><%= money(total) %></span></div>
+      <% if (pen(total)) { %><p class="text-muted">≈ <%= pen(total) %> (referencial)</p><% } %>
+      <p class="help text-muted">Descarga inmediata con tarjeta o PayPal. Bitcoin y WhatsApp se confirman manualmente en menos de 24 h.</p>
+    </aside>
+    <div class="stack">
+      <h2 class="h3">Elige cómo pagar</h2>
+      <div class="provider-grid">
+        <% providers.forEach(function (p) { %>
+          <div class="provider-card <%= !p.enabled ? (p.comingSoon ? 'provider-card--soon' : 'provider-card--disabled') : '' %>">
+            <div class="provider-card__head"><img src="/img/icons/<%= p.id %>.svg" alt="" width="28" height="28"><h3><%= p.name %></h3>
+              <% if (!p.enabled) { %><span class="badge <%= p.comingSoon ? 'badge--new' : 'badge--cat' %>"><%= p.comingSoon ? 'Próximamente' : 'No configurado' %></span><% } %></div>
+            <p class="text-muted"><%= p.description %></p>
+            <% if (p.id === 'whatsapp') { %>
+              <% if (p.enabled) { %><a class="btn btn--whatsapp btn--block" href="/pago/whatsapp/<%= selection.kind === 'cart' ? items[0].product.slug : selection.ref %><%= selection.kind === 'plan' ? '?plan=1' : '' %>" target="_blank" rel="noopener">Coordinar por WhatsApp</a><% } else { %><button class="btn btn--secondary btn--block" disabled>WhatsApp no configurado</button><% } %>
+            <% } else if (p.id === 'paypal') { %>
+              <% if (p.enabled) { %>
+                <div id="paypal-buttons" data-paypal-client="<%= clientConfig.paypal.clientId %>" data-paypal-currency="<%= clientConfig.paypal.currency %>" data-kind="<%= selection.kind %>" data-ref="<%= selection.ref %>" data-csrf="<%= csrfToken %>"></div>
+                <p class="help text-muted" data-paypal-status></p>
+              <% } else { %><button class="btn btn--secondary btn--block" disabled>PayPal no configurado</button><% } %>
+            <% } else { %>
+              <form method="post" action="/pago/<%= p.id %>/crear">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>"><%- kindParam %>
+                <button class="btn <%= p.enabled ? (p.id === 'stripe' ? 'btn--primary' : 'btn--secondary') : 'btn--secondary' %> btn--block" type="submit" <%= p.enabled ? '' : 'disabled' %>>
+                  <%= p.enabled ? (p.id === 'stripe' ? 'Pagar con tarjeta' : p.id === 'btc' ? 'Pagar con Bitcoin' : `Pagar con ${p.name}`) : (p.comingSoon ? 'Próximamente' : 'No disponible') %>
+                </button>
+              </form>
+            <% } %>
+          </div>
+        <% }) %>
+      </div>
+      <p class="text-muted">¿Prefieres transferencia bancaria, Yape o Plin? Elige WhatsApp y coordinamos el pago manualmente.</p>
+    </div>
+  </div>
+</section>
+<%- include('../partials/footer', { extraScripts: providers.find(p => p.id === 'paypal' && p.enabled) ? `<script src="https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientConfig.paypal.clientId)}&currency=${clientConfig.paypal.currency}" data-namespace="paypal_sdk"></script><script src="/js/checkout.js" defer></script>` : '<script src="/js/checkout.js" defer></script>' }) %>

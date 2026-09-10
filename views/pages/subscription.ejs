@@ -1,0 +1,48 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<section class="page-head">
+  <div class="container">
+    <nav class="breadcrumbs" aria-label="Ruta"><a href="/">Inicio</a><span>/</span><span aria-current="page">Membresía</span></nav>
+    <div class="page-head__row">
+      <div><p class="eyebrow">Acceso total</p><h1>Una membresía, <%= productCount %> productos</h1><p class="text-muted">Descarga todos los sistemas, plantillas y scripts del catálogo (y los que publiquemos mientras tu plan esté activo). Ideal para agencias y freelancers.</p></div>
+    </div>
+  </div>
+</section>
+<section class="section section--tight">
+  <div class="container">
+    <div class="grid grid-3 plans-grid">
+      <% plans.forEach(function (plan) { %><%- include('../partials/plan-card', { plan }) %><% }) %>
+    </div>
+  </div>
+</section>
+<section class="section section--alt">
+  <div class="container">
+    <div class="section__head"><div><p class="eyebrow">Comparativa</p><h2>Compra individual vs. membresía</h2></div></div>
+    <div class="table-wrap">
+      <table class="table table--compare">
+        <thead><tr><th>Incluye</th><th>Compra individual</th><th>Membresía</th></tr></thead>
+        <tbody>
+          <tr><td>Código fuente completo</td><td>✔ del producto comprado</td><td class="text-mint">✔ de todo el catálogo</td></tr>
+          <tr><td>Actualizaciones</td><td>✔ del producto comprado</td><td class="text-mint">✔ mientras el plan esté activo</td></tr>
+          <tr><td>Nuevos lanzamientos</td><td>Se compran aparte</td><td class="text-mint">✔ incluidos</td></tr>
+          <tr><td>Demo en vivo</td><td>✔</td><td>✔</td></tr>
+          <tr><td>Soporte</td><td>WhatsApp y correo</td><td class="text-mint">Prioritario</td></tr>
+          <tr><td>Licencia</td><td>1 proyecto por compra</td><td>1 proyecto por producto (ilimitados en Vitalicia)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+<section class="section">
+  <div class="container narrow">
+    <div class="section__head"><div><p class="eyebrow">Dudas frecuentes</p><h2>Preguntas sobre la membresía</h2></div></div>
+    <div class="faq">
+      <details><summary>¿Cómo se activa la membresía?</summary><p>Al confirmarse el pago (inmediato con tarjeta o PayPal; en menos de 24 h con Bitcoin o WhatsApp), tu cuenta muestra la pestaña «Membresía» activa y todos los productos aparecen en «Mis descargas».</p></details>
+      <details><summary>¿Qué pasa cuando vence el plan?</summary><p>Conservas los archivos que ya descargaste, pero dejas de acceder a nuevas descargas y actualizaciones hasta que renueves. El plan Vitalicia nunca vence.</p></details>
+      <details><summary>¿Puedo usar los productos en proyectos de clientes?</summary><p>Sí. Cada producto se puede usar en un proyecto propio o de un cliente. Con el plan Vitalicia la licencia se amplía a proyectos ilimitados.</p></details>
+      <details><summary>¿La membresía se renueva sola?</summary><p>No. No guardamos datos de tu tarjeta ni hacemos cobros recurrentes. Te avisamos por correo antes del vencimiento para que renueves si lo deseas.</p></details>
+      <details><summary>¿Puedo pagar en soles o con Yape?</summary><p>Por ahora aceptamos tarjeta (Stripe), PayPal y Bitcoin. Para Yape, Plin o transferencia bancaria escríbenos por WhatsApp y coordinamos el pago manual. Culqi estará disponible pronto.</p></details>
+    </div>
+  </div>
+</section>
+<%- include('../partials/footer') %>

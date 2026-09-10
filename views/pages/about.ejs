@@ -1,0 +1,39 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<section class="page-head">
+  <div class="container">
+    <nav class="breadcrumbs" aria-label="Ruta"><a href="/">Inicio</a><span>/</span><span aria-current="page">Quiénes somos</span></nav>
+    <div class="page-head__row"><div><p class="eyebrow">Sobre <%= storeName %></p><h1>Desarrollamos software y lo vendemos con el código incluido</h1></div></div>
+  </div>
+</section>
+<section class="section section--tight">
+  <div class="container about-grid">
+    <div class="prose">
+      <p><%= storeName %> nació de una idea simple: los sistemas que construimos para nuestros clientes resuelven problemas que se repiten en miles de negocios. En lugar de empezar cada proyecto desde cero, los convertimos en productos listos para instalar, con código fuente abierto para quien los compra.</p>
+      <p>Cada producto del catálogo pasa por el mismo proceso: se usa en producción con clientes reales, se documenta, se le añade una demo pública y recién entonces se publica. Después seguimos manteniéndolo: las actualizaciones se publican en la sección de <a href="/actualizaciones">Actualizaciones</a> y son gratuitas para quien ya compró.</p>
+      <h2>Qué encontrarás aquí</h2>
+      <ul class="list">
+        <li><strong>Sistemas web</strong>: puntos de venta, facturación, reservas, CRM e inventarios con panel de administración.</li>
+        <li><strong>Plantillas</strong>: paneles y landing pages en HTML/CSS/JS listos para conectar a tu backend.</li>
+        <li><strong>Scripts</strong>: bots, scraping y automatizaciones para tareas concretas.</li>
+        <li><strong>Desarrollo a medida</strong>: adaptamos cualquier producto a tu negocio o creamos uno nuevo.</li>
+      </ul>
+      <h2>Nuestro stack</h2>
+      <p>Trabajamos principalmente con PHP (Laravel), Node.js (Express), Python, MySQL/PostgreSQL y frontend con HTML, CSS y JavaScript sin dependencias innecesarias. Todo lo que vendemos se instala en tu propio servidor: tus datos son tuyos.</p>
+    </div>
+    <aside class="stack">
+      <div class="stat-card"><span class="stat-card__value mono"><%= stats.active %></span><span class="stat-card__label">productos publicados</span></div>
+      <div class="stat-card"><span class="stat-card__value mono"><%= stats.downloads %></span><span class="stat-card__label">descargas entregadas</span></div>
+      <div class="stat-card"><span class="stat-card__value mono">24 h</span><span class="stat-card__label">tiempo máximo de respuesta</span></div>
+      <div class="detail-block detail-block--card">
+        <h2>Hablemos</h2>
+        <p class="text-muted">¿Tienes un proyecto en mente? Escríbenos y te respondemos el mismo día.</p>
+        <div class="stack">
+          <% if (waEnabled) { %><a class="btn btn--whatsapp btn--block" href="https://wa.me/<%= settings.whatsapp_number %>" target="_blank" rel="noopener">WhatsApp</a><% } %>
+          <a class="btn btn--secondary btn--block" href="/contacto">Formulario de contacto</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+<%- include('../partials/footer') %>

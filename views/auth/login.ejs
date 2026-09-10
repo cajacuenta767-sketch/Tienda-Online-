@@ -1,0 +1,18 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<section class="section auth-section">
+  <div class="container">
+    <form class="form auth-card" method="post" action="/login" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="next" value="<%= next %>">
+      <p class="eyebrow">Bienvenido de nuevo</p>
+      <h1>Iniciar sesión</h1>
+      <% if (typeof errors !== 'undefined' && errors.length) { %><div class="alert alert--error"><ul><% errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul></div><% } %>
+      <div class="field"><label class="label" for="l-email">Correo</label><input class="input" id="l-email" name="email" type="email" autocomplete="email" required value="<%= form.email || '' %>"></div>
+      <div class="field"><label class="label" for="l-pass">Contraseña</label><input class="input" id="l-pass" name="password" type="password" autocomplete="current-password" required></div>
+      <button class="btn btn--primary btn--block btn--lg" type="submit">Entrar</button>
+      <p class="text-muted auth-card__alt">¿Aún no tienes cuenta? <a href="/registro<%= next !== '/cuenta' ? '?next=' + encodeURIComponent(next) : '' %>">Crear cuenta</a></p>
+    </form>
+  </div>
+</section>
+<%- include('../partials/footer') %>

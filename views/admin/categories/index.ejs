@@ -1,0 +1,35 @@
+<%- include('../../partials/admin/head') %>
+<div class="admin-form__grid">
+  <section class="admin-block">
+    <h2>Categorías</h2>
+    <div class="table-wrap"><table class="table">
+      <thead><tr><th>Nombre</th><th>Slug</th><th>Descripción</th><th>Orden</th><th>Productos</th><th></th></tr></thead>
+      <tbody>
+        <% categories.forEach(function (c) { %>
+          <tr>
+            <form method="post" action="/admin/categorias/<%= c.id %>" id="cat-<%= c.id %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"></form>
+            <td><input class="input input--sm" form="cat-<%= c.id %>" name="name" value="<%= c.name %>" required></td>
+            <td><input class="input input--sm mono" form="cat-<%= c.id %>" name="slug" value="<%= c.slug %>"></td>
+            <td><input class="input input--sm" form="cat-<%= c.id %>" name="description" value="<%= c.description %>"></td>
+            <td><input class="input input--sm mono" form="cat-<%= c.id %>" name="sort_order" type="number" value="<%= c.sort_order %>" style="width:70px"></td>
+            <td class="mono"><%= c.product_count %></td>
+            <td class="cluster cluster--tight"><button class="btn btn--secondary btn--sm" type="submit" form="cat-<%= c.id %>">Guardar</button>
+              <form method="post" action="/admin/categorias/<%= c.id %>/eliminar" data-confirm="¿Eliminar la categoría «<%= c.name %>»?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--danger btn--sm" type="submit">✕</button></form></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table></div>
+  </section>
+  <aside>
+    <form class="form admin-block" method="post" action="/admin/categorias">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <h2>Nueva categoría</h2>
+      <div class="field"><label class="label" for="nc-name">Nombre</label><input class="input" id="nc-name" name="name" required data-slug-source></div>
+      <div class="field"><label class="label" for="nc-slug">Slug</label><input class="input mono" id="nc-slug" name="slug" data-slug-target placeholder="se genera del nombre"></div>
+      <div class="field"><label class="label" for="nc-desc">Descripción</label><input class="input" id="nc-desc" name="description"></div>
+      <div class="field"><label class="label" for="nc-order">Orden</label><input class="input mono" id="nc-order" name="sort_order" type="number" value="0"></div>
+      <button class="btn btn--primary btn--block" type="submit">Crear categoría</button>
+    </form>
+  </aside>
+</div>
+<%- include('../../partials/admin/footer') %>

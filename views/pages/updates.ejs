@@ -1,0 +1,37 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<section class="page-head">
+  <div class="container">
+    <nav class="breadcrumbs" aria-label="Ruta"><a href="/">Inicio</a><span>/</span><span aria-current="page">Actualizaciones</span></nav>
+    <div class="page-head__row">
+      <div><h1>Actualizaciones</h1><p class="text-muted">Historial de versiones de todos los productos. Si ya compraste, descarga la última versión desde tu cuenta sin costo.</p></div>
+      <span class="mono text-muted"><%= total %> entradas</span>
+    </div>
+  </div>
+</section>
+<section class="section section--tight">
+  <div class="container">
+    <% if (groups.length) { %>
+      <% groups.forEach(function (g) { %>
+        <div class="update-group">
+          <h2 class="update-group__date mono"><time datetime="<%= g.date %>"><%= fmtDate(g.date, { weekday: 'long' }) %></time></h2>
+          <ul class="update-list update-list--cards">
+            <% g.items.forEach(function (u) { %>
+              <li class="update-card">
+                <a class="update-card__thumb" href="/producto/<%= u.product_slug %>"><img src="<%= u.image || '/img/placeholder.svg' %>" alt="" loading="lazy"></a>
+                <div class="update-card__body">
+                  <div class="cluster"><a class="update-card__title" href="/producto/<%= u.product_slug %>"><%= u.product_title %></a><span class="badge badge--version">v<%= u.version %></span></div>
+                  <%- nl2list(u.notes) %>
+                </div>
+              </li>
+            <% }) %>
+          </ul>
+        </div>
+      <% }) %>
+      <%- include('../partials/pagination', { page, pages, basePath: '/actualizaciones', query: {} }) %>
+    <% } else { %>
+      <div class="empty-state"><p class="mono">// sin registros</p><h2>Todavía no hay actualizaciones publicadas</h2></div>
+    <% } %>
+  </div>
+</section>
+<%- include('../partials/footer') %>

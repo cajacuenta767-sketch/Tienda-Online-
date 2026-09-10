@@ -1,0 +1,31 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<section class="page-head"><div class="container page-head__row"><div><h1>Carrito</h1><p class="text-muted"><%= items.length %> producto<%= items.length === 1 ? '' : 's' %></p></div></div></section>
+<section class="section section--tight">
+  <div class="container">
+    <% if (items.length) { %>
+    <div class="two-col">
+      <div class="stack">
+        <% items.forEach(function (p) { %>
+          <div class="cart-row">
+            <img src="<%= p.image || '/img/placeholder.svg' %>" alt="" width="160" height="100">
+            <div class="cart-row__body"><a class="cart-row__title" href="/producto/<%= p.slug %>"><%= p.title %></a><span class="text-muted"><%= p.category_name %> · v<%= p.version %></span></div>
+            <%- include('../partials/price', { product: p }) %>
+            <form method="post" action="/carrito/quitar/<%= p.id %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--ghost btn--sm" type="submit" aria-label="Quitar <%= p.title %>">Quitar</button></form>
+          </div>
+        <% }) %>
+        <form method="post" action="/carrito/vaciar" class="cluster"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--ghost btn--sm" type="submit">Vaciar carrito</button><a class="btn btn--ghost btn--sm" href="/tienda">Seguir comprando</a></form>
+      </div>
+      <aside class="detail-block detail-block--card summary-card">
+        <h2>Resumen</h2>
+        <ul class="buy-box__facts"><li><span>Productos</span><strong><%= items.length %></strong></li><li><span>Total</span><strong class="mono price__current"><%= money(total) %></strong></li></ul>
+        <a class="btn btn--primary btn--block btn--lg mt-3" href="/pagar">Ir a pagar</a>
+        <p class="help text-muted">Necesitas una cuenta para asociar las descargas a tu correo.</p>
+      </aside>
+    </div>
+    <% } else { %>
+      <div class="empty-state"><p class="mono">// carrito vacío</p><h2>Tu carrito está vacío</h2><a class="btn btn--primary" href="/tienda">Explorar la tienda</a></div>
+    <% } %>
+  </div>
+</section>
+<%- include('../partials/footer') %>

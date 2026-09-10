@@ -1,0 +1,19 @@
+<%- include('../../partials/admin/head') %>
+<form class="admin-toolbar" method="get">
+  <div class="cluster">
+    <select class="select select--sm" name="status" data-auto-submit><option value="">Todos los estados</option><option value="pending" <%= status === 'pending' ? 'selected' : '' %>>Pendientes</option><option value="paid" <%= status === 'paid' ? 'selected' : '' %>>Pagados</option><option value="cancelled" <%= status === 'cancelled' ? 'selected' : '' %>>Cancelados</option></select>
+    <select class="select select--sm" name="provider" data-auto-submit><option value="">Todos los métodos</option><% providers.forEach(function (p) { %><option value="<%= p.id %>" <%= provider === p.id ? 'selected' : '' %>><%= p.name %></option><% }) %><option value="manual" <%= provider === 'manual' ? 'selected' : '' %>>Manual</option></select>
+  </div>
+  <span class="mono text-muted"><%= result.total %> pedidos</span>
+</form>
+<div class="table-wrap"><table class="table">
+  <thead><tr><th>Ref.</th><th>Fecha</th><th>Cliente</th><th>Método</th><th>Monto</th><th>Estado</th><th></th></tr></thead>
+  <tbody>
+    <% result.rows.forEach(function (o) { %>
+      <tr><td><a class="mono" href="/admin/pedidos/<%= o.id %>"><%= o.reference %></a></td><td><%= fmtDateTime(o.created_at) %></td><td><%= o.user_name || '—' %><br><small class="text-muted"><%= o.user_email || '' %></small></td><td><%= providerLabel(o.provider) %></td><td class="mono"><%= money(o.amount_cents) %></td><td><span class="badge badge--status-<%= o.status %>"><%= statusLabel(o.status) %></span><% if (o.status === 'pending' && o.data.claimed_at) { %> <span class="badge badge--new">Cliente confirmó</span><% } %></td><td><a class="btn btn--secondary btn--sm" href="/admin/pedidos/<%= o.id %>">Abrir</a></td></tr>
+    <% }) %>
+    <% if (!result.rows.length) { %><tr><td colspan="7" class="text-muted">Sin pedidos.</td></tr><% } %>
+  </tbody>
+</table></div>
+<%- include('../../partials/pagination', { page: result.page, pages: result.pages, basePath: '/admin/pedidos', query: { status, provider } }) %>
+<%- include('../../partials/admin/footer') %>

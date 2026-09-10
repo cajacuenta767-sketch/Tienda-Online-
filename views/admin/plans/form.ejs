@@ -1,0 +1,26 @@
+<%- include('../../partials/admin/head') %>
+<% if (errors.length) { %><div class="alert alert--error"><ul><% errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul></div><% } %>
+<form class="form admin-form" method="post" action="<%= plan ? `/admin/planes/${plan.id}/editar` : '/admin/planes/nuevo' %>">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div class="admin-form__grid">
+    <section class="admin-block">
+      <div class="form-grid">
+        <div class="field"><label class="label" for="pl-name">Nombre</label><input class="input" id="pl-name" name="name" required value="<%= form.name || '' %>" data-slug-source></div>
+        <div class="field"><label class="label" for="pl-slug">Slug</label><input class="input mono" id="pl-slug" name="slug" value="<%= form.slug || '' %>" data-slug-target></div>
+        <div class="field field--span"><label class="label" for="pl-desc">Descripción corta</label><input class="input" id="pl-desc" name="description" value="<%= form.description || '' %>"></div>
+        <div class="field field--span"><label class="label" for="pl-feat">Beneficios (uno por línea)</label><textarea class="textarea" id="pl-feat" name="features" rows="6"><%= form.features || '' %></textarea></div>
+      </div>
+    </section>
+    <aside class="stack">
+      <section class="admin-block">
+        <div class="field"><label class="label" for="pl-price">Precio (USD)</label><input class="input mono" id="pl-price" name="price" type="number" step="0.01" min="0" required value="<%= form.price_cents !== undefined ? (form.price_cents / 100).toFixed(2) : '' %>"></div>
+        <div class="field"><label class="label" for="pl-days">Duración en días</label><input class="input mono" id="pl-days" name="duration_days" type="number" min="1" value="<%= form.duration_days || '' %>" placeholder="vacío = vitalicia"></div>
+        <div class="field"><label class="label" for="pl-order">Orden</label><input class="input mono" id="pl-order" name="sort_order" type="number" value="<%= form.sort_order || 0 %>"></div>
+        <label class="checkbox"><input type="checkbox" name="is_active" value="1" <%= form.is_active ? 'checked' : '' %>> Activo</label>
+        <label class="checkbox"><input type="checkbox" name="is_featured" value="1" <%= form.is_featured ? 'checked' : '' %>> Destacar como «Más popular»</label>
+      </section>
+      <div class="form__actions"><button class="btn btn--primary btn--block btn--lg" type="submit"><%= plan ? 'Guardar cambios' : 'Crear plan' %></button><a class="btn btn--ghost btn--block" href="/admin/planes">Volver</a></div>
+    </aside>
+  </div>
+</form>
+<%- include('../../partials/admin/footer') %>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> · Admin · <%= storeName %></title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="/css/app.css">
+  <script>(function(){try{var t=localStorage.getItem('dm-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+</head>
+<body class="admin-body">
+<div class="admin-layout">
+<%- include('sidebar') %>
+<main class="admin-main" id="main">
+  <header class="admin-topbar">
+    <button class="nav__toggle" type="button" data-admin-nav aria-label="Menú"><span class="nav__burger" aria-hidden="true"></span></button>
+    <h1 class="admin-topbar__title"><%= title %></h1>
+    <div class="cluster">
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema"><span class="theme-toggle__icon" aria-hidden="true"></span></button>
+      <a class="btn btn--ghost btn--sm" href="/" target="_blank" rel="noopener">Ver tienda ↗</a>
+    </div>
+  </header>
+  <%- include('../flash') %>
+  <div class="admin-content">

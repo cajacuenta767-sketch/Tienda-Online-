@@ -1,0 +1,16 @@
+<%- include('../partials/head', { bodyClass: 'preview-body' }) %>
+<div class="preview-bar">
+  <a class="nav__logo" href="/"><img src="/img/logo.svg" alt="" width="26" height="26"><span><%= storeName %></span></a>
+  <div class="preview-bar__title"><strong><%= product.title %></strong> <span class="badge badge--version">v<%= product.version %></span></div>
+  <div class="preview-bar__actions">
+    <%- include('../partials/price', { product }) %>
+    <a class="btn btn--primary btn--sm" href="/pagar?producto=<%= product.slug %>">Comprar</a>
+    <a class="btn btn--ghost btn--sm" href="<%= product.demo_url %>" target="_blank" rel="noopener">Abrir en pestaña nueva ↗</a>
+    <a class="btn btn--ghost btn--sm" href="/producto/<%= product.slug %>">← Volver</a>
+  </div>
+</div>
+<p class="preview-note">Si la demo no carga dentro de esta página, ábrela en una pestaña nueva.</p>
+<iframe class="preview-frame" src="<%= product.demo_url %>" title="Demo de <%= product.title %>" referrerpolicy="no-referrer" loading="eager"></iframe>
+<script src="/js/app.js" defer></script>
+</body>
+</html>

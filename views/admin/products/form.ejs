@@ -1,0 +1,90 @@
+<%- include('../../partials/admin/head') %>
+<% const isEdit = Boolean(product); %>
+<% if (errors.length) { %><div class="alert alert--error"><ul><% errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul></div><% } %>
+<form class="form admin-form" method="post" action="<%= isEdit ? `/admin/productos/${product.id}/editar` : '/admin/productos/nuevo' %>" enctype="multipart/form-data">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div class="admin-form__grid">
+    <div class="stack">
+      <section class="admin-block">
+        <h2>Información básica</h2>
+        <div class="form-grid">
+          <div class="field field--span"><label class="label" for="f-title">Título</label><input class="input" id="f-title" name="title" required value="<%= form.title || '' %>" data-slug-source></div>
+          <div class="field"><label class="label" for="f-slug">Slug (URL)</label><input class="input mono" id="f-slug" name="slug" value="<%= form.slug || '' %>" placeholder="se genera del título" data-slug-target><span class="help">/producto/<em>slug</em></span></div>
+          <div class="field"><label class="label" for="f-cat">Categoría</label><select class="select" id="f-cat" name="category_id"><option value="">Sin categoría</option><% categories.forEach(function (c) { %><option value="<%= c.id %>" <%= Number(form.category_id) === c.id ? 'selected' : '' %>><%= c.name %></option><% }) %></select></div>
+          <div class="field field--span"><label class="label" for="f-short">Descripción corta</label><input class="input" id="f-short" name="short_description" maxlength="300" value="<%= form.short_description || '' %>"><span class="help">Se muestra en las tarjetas (máx. 300 caracteres).</span></div>
+          <div class="field field--span"><label class="label" for="f-long">Descripción larga</label><textarea class="textarea" id="f-long" name="long_description" rows="8"><%= form.long_description || '' %></textarea><span class="help">Separa párrafos con una línea en blanco.</span></div>
+          <div class="field"><label class="label" for="f-features">Características</label><textarea class="textarea" id="f-features" name="features" rows="7" placeholder="Una por línea"><%= form.features || '' %></textarea></div>
+          <div class="field"><label class="label" for="f-req">Requisitos / Stack</label><textarea class="textarea" id="f-req" name="requirements" rows="7" placeholder="Una por línea"><%= form.requirements || '' %></textarea></div>
+          <div class="field field--span"><label class="label" for="f-tags">Etiquetas</label><input class="input" id="f-tags" name="tags" value="<%= form.tags || '' %>" placeholder="PHP, Laravel, POS (separadas por coma)"></div>
+        </div>
+      </section>
+      <section class="admin-block">
+        <h2>Imágenes</h2>
+        <% if (isEdit && product.images.length) { %>
+          <form method="post" action="/admin/productos/<%= product.id %>/imagenes/ordenar" class="image-grid" id="reorder-form"><input type="hidden" name="_csrf" value="<%= csrfToken %>"></form>
+          <div class="image-grid">
+            <% product.images.forEach(function (img, i) { %>
+              <div class="image-tile">
+                <img src="<%= img.path %>" alt="">
+                <div class="image-tile__bar">
+                  <label class="sr-only" for="ord-<%= img.id %>">Orden</label>
+                  <input class="input input--sm mono" id="ord-<%= img.id %>" form="reorder-form" type="number" name="order_<%= img.id %>" value="<%= i + 1 %>" min="1" data-order-id="<%= img.id %>">
+                  <button class="btn btn--danger btn--sm" type="submit" form="del-img-<%= img.id %>" data-confirm="¿Eliminar esta imagen?">✕</button>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+          <% product.images.forEach(function (img) { %><form id="del-img-<%= img.id %>" method="post" action="/admin/productos/<%= product.id %>/imagenes/<%= img.id %>/eliminar"><input type="hidden" name="_csrf" value="<%= csrfToken %>"></form><% }) %>
+          <button class="btn btn--ghost btn--sm" type="button" data-reorder-submit>Guardar orden</button>
+        <% } %>
+        <div class="field"><label class="label" for="f-images">Añadir imágenes</label><input class="file-input" id="f-images" name="images" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple><span class="help">PNG, JPG, WEBP o GIF. Hasta 10 por vez, máx. <%= config.MAX_IMAGE_MB || 5 %> MB cada una. Recomendado 1280×800.</span></div>
+      </section>
+      <% if (isEdit) { %>
+      <section class="admin-block">
+        <h2>Historial de versiones</h2>
+        <% if (product.changelog.length) { %>
+          <div class="table-wrap"><table class="table table--compact"><thead><tr><th>Versión</th><th>Fecha</th><th>Notas</th><th></th></tr></thead><tbody>
+            <% product.changelog.forEach(function (c) { %><tr><td><span class="badge badge--version">v<%= c.version %></span></td><td class="mono"><%= c.released_at %></td><td><%- nl2list(c.notes) %></td><td><button class="btn btn--danger btn--sm" type="submit" form="del-cl-<%= c.id %>" data-confirm="¿Eliminar esta entrada?">✕</button></td></tr><% }) %>
+          </tbody></table></div>
+          <% product.changelog.forEach(function (c) { %><form id="del-cl-<%= c.id %>" method="post" action="/admin/productos/<%= product.id %>/changelog/<%= c.id %>/eliminar"><input type="hidden" name="_csrf" value="<%= csrfToken %>"></form><% }) %>
+        <% } %>
+        <div class="form-grid mt-3">
+          <div class="field"><label class="label" for="cl-version">Nueva versión</label><input class="input mono" id="cl-version" form="changelog-form" name="version" placeholder="1.1.0"></div>
+          <div class="field"><label class="label" for="cl-date">Fecha</label><input class="input" id="cl-date" form="changelog-form" name="released_at" type="date" value="<%= new Date().toISOString().slice(0, 10) %>"></div>
+          <div class="field field--span"><label class="label" for="cl-notes">Notas (una por línea)</label><textarea class="textarea" id="cl-notes" form="changelog-form" name="notes" rows="3"></textarea></div>
+          <label class="checkbox field--span"><input type="checkbox" form="changelog-form" name="update_version" value="1" checked> Actualizar la versión del producto a esta versión</label>
+          <div class="field--span"><button class="btn btn--secondary" type="submit" form="changelog-form">Registrar versión</button></div>
+        </div>
+      </section>
+      <% } %>
+    </div>
+    <aside class="stack">
+      <section class="admin-block">
+        <h2>Precio</h2>
+        <div class="field"><label class="label" for="f-price">Precio (USD)</label><input class="input mono" id="f-price" name="price" type="number" step="0.01" min="0" required value="<%= form.price_cents !== undefined && form.price_cents !== null ? (form.price_cents / 100).toFixed(2) : '' %>"></div>
+        <div class="field"><label class="label" for="f-discount">Precio de oferta (opcional)</label><input class="input mono" id="f-discount" name="discount_price" type="number" step="0.01" min="0" value="<%= form.discount_cents !== undefined && form.discount_cents !== null ? (form.discount_cents / 100).toFixed(2) : '' %>"><span class="help">Debe ser menor que el precio normal.</span></div>
+      </section>
+      <section class="admin-block">
+        <h2>Publicación</h2>
+        <label class="checkbox"><input type="checkbox" name="is_active" value="1" <%= (form.is_active === undefined || form.is_active) ? 'checked' : '' %>> Activo (visible en la tienda)</label>
+        <label class="checkbox"><input type="checkbox" name="is_featured" value="1" <%= form.is_featured ? 'checked' : '' %>> Destacado en inicio</label>
+        <label class="checkbox"><input type="checkbox" name="is_new" value="1" <%= form.is_new ? 'checked' : '' %>> Marcar como nuevo</label>
+        <div class="field mt-2"><label class="label" for="f-version">Versión actual</label><input class="input mono" id="f-version" name="version" value="<%= form.version || '1.0.0' %>"></div>
+        <div class="field"><label class="label" for="f-demo">URL de la demo</label><input class="input" id="f-demo" name="demo_url" type="url" value="<%= form.demo_url || '' %>" placeholder="https://demo.tudominio.com/…"></div>
+        <div class="field"><label class="label" for="f-license">Licencia</label><input class="input" id="f-license" name="license" value="<%= form.license || 'Licencia estándar: uso en 1 proyecto' %>"></div>
+      </section>
+      <section class="admin-block">
+        <h2>Archivo del producto (.zip)</h2>
+        <% if (isEdit && product.file_name) { %><p class="text-mint">✔ <span class="mono"><%= product.file_original_name %></span> <small class="text-muted">(<%= Math.round((product.file_size || 0) / 1024) %> KB)</small></p><p class="help">Sube otro ZIP para reemplazarlo.</p><% } else { %><p class="text-danger">Sin archivo: los clientes no podrán descargar.</p><% } %>
+        <div class="field"><input class="file-input" name="zip" type="file" accept=".zip,application/zip"><span class="help">Máx. <%= config.MAX_ZIP_MB || 200 %> MB. Se guarda fuera de la carpeta pública.</span></div>
+      </section>
+      <div class="form__actions form__actions--sticky">
+        <button class="btn btn--primary btn--block btn--lg" type="submit"><%= isEdit ? 'Guardar cambios' : 'Crear producto' %></button>
+        <% if (isEdit) { %><a class="btn btn--ghost btn--block" href="/producto/<%= product.slug %>" target="_blank" rel="noopener">Ver en la tienda ↗</a><% } %>
+        <a class="btn btn--ghost btn--block" href="/admin/productos">Volver al listado</a>
+      </div>
+    </aside>
+  </div>
+</form>
+<% if (isEdit) { %><form id="changelog-form" method="post" action="/admin/productos/<%= product.id %>/changelog"><input type="hidden" name="_csrf" value="<%= csrfToken %>"></form><% } %>
+<%- include('../../partials/admin/footer') %>

@@ -1,0 +1,16 @@
+<%- include('../../partials/admin/head') %>
+<div class="stack">
+  <% messages.forEach(function (m) { %>
+    <article class="admin-block message <%= m.read_at ? '' : 'message--unread' %>">
+      <div class="section__head"><div><strong><%= m.name %></strong> <a class="mono" href="mailto:<%= m.email %>"><%= m.email %></a><% if (m.subject) { %> · <%= m.subject %><% } %></div><time class="mono text-muted"><%= fmtDateTime(m.created_at) %></time></div>
+      <div class="prose"><%- nl2paragraphs(m.message) %></div>
+      <div class="cluster cluster--tight mt-2">
+        <% if (!m.read_at) { %><form method="post" action="/admin/mensajes/<%= m.id %>/leido"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--secondary btn--sm" type="submit">Marcar leído</button></form><% } %>
+        <a class="btn btn--ghost btn--sm" href="mailto:<%= m.email %>?subject=Re: <%= encodeURIComponent(m.subject || 'tu mensaje') %>">Responder</a>
+        <form method="post" action="/admin/mensajes/<%= m.id %>/eliminar" data-confirm="¿Eliminar este mensaje?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--danger btn--sm" type="submit">Eliminar</button></form>
+      </div>
+    </article>
+  <% }) %>
+  <% if (!messages.length) { %><div class="empty-state"><p class="mono">// bandeja vacía</p><h2>No hay mensajes de contacto</h2></div><% } %>
+</div>
+<%- include('../../partials/admin/footer') %>

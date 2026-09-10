@@ -1,0 +1,28 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<section class="page-head">
+  <div class="container">
+    <nav class="breadcrumbs" aria-label="Ruta"><a href="/">Inicio</a><span>/</span><span aria-current="page">Términos y licencias</span></nav>
+    <div class="page-head__row"><div><h1>Términos y licencias</h1><p class="text-muted">Última actualización: <span class="mono"><%= fmtDate(settings.terms_updated_at) %></span></p></div></div>
+  </div>
+</section>
+<section class="section section--tight">
+  <div class="container narrow prose">
+    <h2>1. Licencia estándar</h2>
+    <p>Cada compra individual otorga una licencia no exclusiva para usar el producto en <strong>un (1) proyecto</strong>, propio o de un cliente final. Puedes modificar el código libremente. No está permitido revender, sublicenciar, redistribuir o publicar el código fuente, en su forma original o modificada, como producto independiente.</p>
+    <h2>2. Licencia por membresía</h2>
+    <p>Mientras la membresía esté activa puedes descargar cualquier producto del catálogo. Cada descarga se rige por la licencia estándar (un proyecto por producto). El plan Vitalicia amplía la licencia a proyectos ilimitados. Al vencer un plan temporal conservas lo descargado, pero no puedes obtener nuevas versiones hasta renovar.</p>
+    <h2>3. Actualizaciones y soporte</h2>
+    <p>Las actualizaciones del producto comprado son gratuitas y se anuncian en la sección de Actualizaciones. El soporte cubre la instalación y errores del producto; no incluye personalizaciones, que se cotizan aparte.</p>
+    <h2>4. Pagos</h2>
+    <p>Aceptamos tarjeta (Stripe), PayPal, Bitcoin y pagos coordinados por WhatsApp. Los pagos con Bitcoin y por WhatsApp se confirman manualmente en un plazo máximo de 24 horas hábiles. Los precios se expresan en dólares estadounidenses (USD).</p>
+    <h2>5. Reembolsos</h2>
+    <p>Por tratarse de productos digitales con código fuente, no se realizan reembolsos una vez descargado el archivo, salvo que el producto no funcione según lo descrito y no podamos solucionarlo en un plazo razonable.</p>
+    <h2>6. Demos</h2>
+    <p>Las demos públicas son entornos de prueba que se reinician periódicamente. No subas datos reales a ellas.</p>
+    <h2>7. Datos personales</h2>
+    <p>Solo guardamos el nombre, el correo y el historial de compras necesarios para entregar tus descargas. No almacenamos datos de tarjetas: los procesan directamente Stripe o PayPal.</p>
+    <p class="text-muted">¿Dudas sobre la licencia? <a href="/contacto">Escríbenos</a>.</p>
+  </div>
+</section>
+<%- include('../partials/footer') %>

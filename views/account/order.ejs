@@ -1,0 +1,63 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<section class="page-head">
+  <div class="container page-head__row">
+    <div><nav class="breadcrumbs" aria-label="Ruta"><a href="/cuenta">Mi cuenta</a><span>/</span><span aria-current="page"><%= order.reference %></span></nav><h1>Pedido <span class="mono"><%= order.reference %></span></h1></div>
+    <span class="badge badge--status-<%= order.status %> badge--lg"><%= statusLabel(order.status) %></span>
+  </div>
+</section>
+<section class="section section--tight">
+  <div class="container two-col">
+    <div class="stack">
+      <div class="detail-block detail-block--card">
+        <h2>Detalle</h2>
+        <div class="table-wrap"><table class="table table--compact">
+          <thead><tr><th>Producto</th><th>Precio</th><th></th></tr></thead>
+          <tbody>
+            <% items.forEach(function (it) { %>
+              <tr>
+                <td><% if (it.product_slug) { %><a href="/producto/<%= it.product_slug %>"><%= it.title %></a><% } else { %><%= it.title %><% } %></td>
+                <td class="mono"><%= money(it.unit_cents, order.currency) %></td>
+                <td><% if (order.status === 'paid' && it.canDownload) { %><a class="btn btn--mint btn--sm" href="/descargar/<%= it.product_id %>">Descargar</a><% } else if (order.status === 'paid' && it.item_type === 'plan') { %><a class="btn btn--secondary btn--sm" href="/cuenta?tab=descargas">Ver descargas</a><% } %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+          <tfoot><tr><th>Total</th><th class="mono"><%= money(order.amount_cents, order.currency) %></th><th></th></tr></tfoot>
+        </table></div>
+      </div>
+      <% if (order.status === 'pending' && order.provider === 'btc') { %>
+        <div class="alert alert--info">
+          <div>
+            <strong>Pago en Bitcoin pendiente.</strong>
+            <% if (order.data.claimed_at) { %>Recibimos tu aviso de pago el <%= fmtDateTime(order.data.claimed_at) %>. Lo verificaremos en la cadena y activaremos tu descarga en menos de 24 h.<% } else { %>Envía <span class="mono"><%= order.data.btc_amount %> BTC</span> a la dirección indicada y confírmanos el envío.<% } %>
+            <div class="cluster mt-2"><a class="btn btn--primary btn--sm" href="/pago/btc/<%= order.id %>">Ver instrucciones y QR</a></div>
+          </div>
+        </div>
+      <% } %>
+      <% if (order.status === 'paid') { %>
+        <div class="alert alert--success"><span>Pago confirmado el <%= fmtDateTime(order.paid_at) %>. ¡Gracias por tu compra!</span></div>
+      <% } %>
+    </div>
+    <aside class="stack">
+      <div class="detail-block detail-block--card">
+        <h2>Resumen</h2>
+        <ul class="buy-box__facts">
+          <li><span>Fecha</span><strong><%= fmtDateTime(order.created_at) %></strong></li>
+          <li><span>Método</span><strong><%= providerLabel(order.provider) %></strong></li>
+          <li><span>Estado</span><strong><%= statusLabel(order.status) %></strong></li>
+          <% if (order.paid_at) { %><li><span>Pagado</span><strong><%= fmtDateTime(order.paid_at) %></strong></li><% } %>
+        </ul>
+        <% if (order.status === 'pending') { %>
+          <div class="stack mt-3">
+            <% if (['stripe', 'paypal'].includes(order.provider)) { %>
+              <form method="post" action="/pedidos/<%= order.id %>/reintentar"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--primary btn--block" type="submit">Reintentar pago</button></form>
+            <% } %>
+            <form method="post" action="/pedidos/<%= order.id %>/cancelar" data-confirm="¿Cancelar este pedido?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--ghost btn--block" type="submit">Cancelar pedido</button></form>
+          </div>
+        <% } %>
+      </div>
+      <% if (waEnabled) { %><a class="btn btn--whatsapp btn--block" href="https://wa.me/<%= settings.whatsapp_number %>?text=<%= encodeURIComponent('Hola, tengo una consulta sobre mi pedido ' + order.reference) %>" target="_blank" rel="noopener">Consultar por WhatsApp</a><% } %>
+    </aside>
+  </div>
+</section>
+<%- include('../partials/footer') %>

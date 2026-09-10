@@ -1,0 +1,6 @@
+<% const _p = typeof product !== 'undefined' ? product : item; const _pct = discountPct(_p); %>
+<span class="price <%= typeof size !== 'undefined' && size === 'lg' ? 'price--lg' : '' %>">
+  <span class="price__current"><%= money(effectivePrice(_p), _p.currency) %></span>
+  <% if (_pct) { %><span class="price__old"><%= money(_p.price_cents, _p.currency) %></span><% } %>
+  <% if (pen(effectivePrice(_p))) { %><span class="price__pen">≈ <%= pen(effectivePrice(_p)) %></span><% } %>
+</span>

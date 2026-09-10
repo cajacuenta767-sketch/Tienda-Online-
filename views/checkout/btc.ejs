@@ -1,0 +1,40 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<section class="page-head"><div class="container page-head__row"><div><p class="eyebrow">Pedido <span class="mono"><%= order.reference %></span></p><h1>Pago en Bitcoin</h1></div><span class="badge badge--status-<%= order.status %> badge--lg"><%= statusLabel(order.status) %></span></div></section>
+<section class="section section--tight">
+  <div class="container two-col">
+    <div class="detail-block detail-block--card btc-box">
+      <div class="qr-box"><% if (qrDataUrl) { %><img src="<%= qrDataUrl %>" alt="Código QR para pagar <%= order.data.btc_amount %> BTC" width="240" height="240"><% } else { %><span class="text-muted">QR no disponible</span><% } %></div>
+      <div class="stack">
+        <div class="field"><span class="label">Monto exacto a enviar</span><div class="copy-field"><code class="mono" id="btc-amount"><%= order.data.btc_amount %> BTC</code><button type="button" class="btn btn--ghost btn--sm" data-copy="<%= order.data.btc_amount %>">Copiar</button></div><span class="help">Equivale a <%= money(order.amount_cents) %> a una tasa de <%= money(Math.round(Number(order.data.rate) * 100)) %>/BTC.</span></div>
+        <div class="field"><span class="label">Dirección</span><div class="copy-field"><code class="mono" id="btc-address"><%= order.data.address || order.provider_ref %></code><button type="button" class="btn btn--ghost btn--sm" data-copy="<%= order.data.address || order.provider_ref %>">Copiar</button></div></div>
+        <a class="btn btn--secondary btn--block" href="<%= uri %>">Abrir en mi billetera</a>
+      </div>
+    </div>
+    <aside class="stack">
+      <div class="detail-block detail-block--card">
+        <h2>Cómo funciona</h2>
+        <ol class="steps">
+          <li>Envía exactamente <span class="mono"><%= order.data.btc_amount %> BTC</span> a la dirección indicada (las comisiones de red van por tu cuenta).</li>
+          <li>Pulsa «Ya realicé el pago» e indica, si puedes, el ID de la transacción (txid).</li>
+          <li>Verificamos la transacción en la cadena y activamos tu descarga en menos de 24 h. Recibirás la confirmación en tu cuenta.</li>
+        </ol>
+      </div>
+      <% if (order.status === 'pending') { %>
+        <% if (order.data.claimed_at) { %>
+          <div class="alert alert--info"><span>Aviso de pago recibido el <%= fmtDateTime(order.data.claimed_at) %>. Estamos verificando la transacción.</span></div>
+        <% } else { %>
+          <form class="form detail-block detail-block--card" method="post" action="/pago/btc/<%= order.id %>/confirmar">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="field"><label class="label" for="txid">ID de transacción (opcional)</label><input class="input mono" id="txid" name="txid" placeholder="p. ej. 3a1f…"></div>
+            <button class="btn btn--primary btn--block" type="submit">Ya realicé el pago</button>
+          </form>
+        <% } %>
+      <% } else if (order.status === 'paid') { %>
+        <div class="alert alert--success"><span>Pago confirmado. <a href="/pedidos/<%= order.id %>">Ver pedido y descargas →</a></span></div>
+      <% } %>
+      <a class="btn btn--ghost btn--block" href="/pedidos/<%= order.id %>">Ver detalle del pedido</a>
+    </aside>
+  </div>
+</section>
+<%- include('../partials/footer') %>
