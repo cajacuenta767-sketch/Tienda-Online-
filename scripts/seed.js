@@ -162,7 +162,7 @@ function fresh(db) {
   if (config.IS_PROD && !config.SEED_ALLOW_FRESH) throw new Error('En producción, --fresh requiere SEED_ALLOW_FRESH=true.');
   db.exec(`DELETE FROM downloads; DELETE FROM memberships; DELETE FROM order_items; DELETE FROM orders; DELETE FROM changelog;
     DELETE FROM product_tags; DELETE FROM tags; DELETE FROM product_images; DELETE FROM products; DELETE FROM categories; DELETE FROM plans;
-    DELETE FROM contact_messages; DELETE FROM sessions; DELETE FROM users; DELETE FROM settings;`);
+    DELETE FROM contact_messages; DELETE FROM sessions; DELETE FROM users; DELETE FROM settings; DELETE FROM sqlite_sequence;`);
 }
 
 function seed({ db = getDb(), minimal = false, freshRun = false } = {}) {
