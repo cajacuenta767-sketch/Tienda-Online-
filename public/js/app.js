@@ -11,12 +11,31 @@
     toastTimer = setTimeout(function () { toastEl.classList.remove('is-visible'); }, 2400);
   }
 
+  // Franja promocional cerrable (se recuerda 7 días)
+  var promo = document.querySelector('[data-promo]');
+  if (promo) {
+    var hiddenUntil = 0;
+    try { hiddenUntil = Number(localStorage.getItem('dm-promo-hidden') || 0); } catch (e) {}
+    if (hiddenUntil < Date.now()) promo.hidden = false;
+    var closeBtn = promo.querySelector('[data-promo-close]');
+    if (closeBtn) closeBtn.addEventListener('click', function () {
+      promo.hidden = true;
+      try { localStorage.setItem('dm-promo-hidden', String(Date.now() + 7 * 24 * 3600 * 1000)); } catch (e) {}
+    });
+  }
+  function syncThemeLabel() {
+    var dark = root.getAttribute('data-theme') === 'dark';
+    document.querySelectorAll('[data-theme-label]').forEach(function (l) { l.textContent = dark ? 'claro' : 'oscuro'; });
+  }
+  syncThemeLabel();
+
   // Tema claro/oscuro (claro por defecto)
   document.querySelectorAll('[data-theme-toggle]').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var dark = root.getAttribute('data-theme') !== 'dark';
       if (dark) root.setAttribute('data-theme', 'dark'); else root.removeAttribute('data-theme');
       try { localStorage.setItem('dm-theme', dark ? 'dark' : 'light'); } catch (e) {}
+      syncThemeLabel();
       toast(dark ? 'Modo oscuro activado' : 'Modo claro activado');
     });
   });

@@ -49,6 +49,13 @@
   <img src="/img/icons/whatsapp.svg" alt="" width="28" height="28">
 </a>
 <% } %>
+<nav class="tabbar" aria-label="Navegación móvil">
+  <a href="/" class="<%= currentPath === '/' ? 'is-active' : '' %>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 11 9-8 9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg><span>Inicio</span></a>
+  <a href="/tienda" class="<%= isActive('/tienda') ? 'is-active' : '' %>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l1-5h16l1 5M3 9h18v11H3zM9 13h6"/></svg><span>Tienda</span></a>
+  <a href="/favoritos" class="<%= isActive('/favoritos') ? 'is-active' : '' %>"><%- include('icons', { icon: 'heart' }) %><span>Favoritos</span><% if (favoritesCount) { %><b><%= favoritesCount %></b><% } %></a>
+  <a href="/carrito" class="<%= isActive('/carrito') ? 'is-active' : '' %>"><%- include('icons', { icon: 'cart' }) %><span>Carrito</span><% if (cartCount) { %><b><%= cartCount %></b><% } %></a>
+  <a href="<%= currentUser ? '/cuenta' : '/login' %>" class="<%= isActive('/cuenta') || isActive('/login') ? 'is-active' : '' %>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span><%= currentUser ? 'Cuenta' : 'Entrar' %></span></a>
+</nav>
 <div class="toast" data-toast role="status" aria-live="polite"></div>
 <script src="/js/app.js" defer></script>
 <% if (typeof extraScripts !== 'undefined') { %><%- extraScripts %><% } %>

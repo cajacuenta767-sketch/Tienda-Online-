@@ -1,5 +1,5 @@
 <% if (settings.promo_banner_active === '1' && settings.promo_banner_text) { %>
-<div class="promo-banner"><div class="container"><span><%= settings.promo_banner_text %></span> <a href="/tienda?oferta=1">Ver ofertas →</a></div></div>
+<div class="promo-banner" data-promo hidden><div class="container"><span class="promo-banner__text"><%= settings.promo_banner_text %></span> <a href="/tienda?oferta=1">Ver ofertas →</a><button type="button" class="promo-banner__close" aria-label="Cerrar aviso" data-promo-close>×</button></div></div>
 <% } %>
 <header class="navbar">
   <div class="container navbar__inner">
@@ -54,6 +54,7 @@
   </div>
   <div class="nav__mobile" id="nav-mobile" hidden>
     <form class="nav__search nav__search--mobile" action="/tienda" method="get"><button type="submit" aria-label="Buscar"><%- include('icons', { icon: 'search' }) %></button><input type="search" name="q" placeholder="Buscar…" aria-label="Buscar"></form>
+    <button type="button" class="nav__mobile-theme" data-theme-toggle><span class="icon-btn theme-toggle"><%- include('icons', { icon: 'sun' }) %><%- include('icons', { icon: 'moon' }) %></span> Cambiar a modo <span data-theme-label>oscuro</span></button>
     <a href="/">Inicio</a>
     <a href="/tienda">Tienda</a>
     <% navCategories.forEach(function (c) { %><a class="nav__mobile-sub" href="/tienda/categoria/<%= c.slug %>"><%= c.name %></a><% }) %>
