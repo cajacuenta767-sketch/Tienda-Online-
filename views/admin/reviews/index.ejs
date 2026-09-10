@@ -1,0 +1,25 @@
+<%- include('../../partials/admin/head') %>
+<form class="admin-toolbar" method="get">
+  <select class="select select--sm" name="status" data-auto-submit><option value="">Todas</option><option value="pending" <%= status === 'pending' ? 'selected' : '' %>>Pendientes</option><option value="approved" <%= status === 'approved' ? 'selected' : '' %>>Aprobadas</option><option value="rejected" <%= status === 'rejected' ? 'selected' : '' %>>Rechazadas</option></select>
+  <span class="mono text-muted"><%= result.total %> reseñas</span>
+</form>
+<div class="stack">
+  <% result.rows.forEach(function (r) { %>
+    <article class="admin-block">
+      <div class="section__head">
+        <div class="cluster"><%- stars(r.rating) %><strong><%= r.user_name %></strong><span class="text-muted">sobre</span><a href="/producto/<%= r.product_slug %>" target="_blank" rel="noopener"><%= r.product_title %></a><span class="badge badge--status-<%= r.status %>"><%= r.status === 'pending' ? 'Pendiente' : r.status === 'approved' ? 'Aprobada' : 'Rechazada' %></span></div>
+        <time class="mono text-muted"><%= fmtDateTime(r.created_at) %></time>
+      </div>
+      <% if (r.title) { %><p><strong><%= r.title %></strong></p><% } %>
+      <p class="text-muted"><%= r.body %></p>
+      <div class="cluster cluster--tight">
+        <% if (r.status !== 'approved') { %><form method="post" action="/admin/resenas/<%= r.id %>/estado"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="status" value="approved"><button class="btn btn--success btn--sm" type="submit">Aprobar</button></form><% } %>
+        <% if (r.status !== 'rejected') { %><form method="post" action="/admin/resenas/<%= r.id %>/estado"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="status" value="rejected"><button class="btn btn--secondary btn--sm" type="submit">Rechazar</button></form><% } %>
+        <form method="post" action="/admin/resenas/<%= r.id %>/eliminar" data-confirm="¿Eliminar esta reseña?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--danger btn--sm" type="submit">Eliminar</button></form>
+      </div>
+    </article>
+  <% }) %>
+  <% if (!result.rows.length) { %><div class="empty-state"><p class="mono">// sin reseñas</p><h2>No hay reseñas con ese filtro</h2></div><% } %>
+</div>
+<%- include('../../partials/pagination', { page: result.page, pages: result.pages, basePath: '/admin/resenas', query: { status } }) %>
+<%- include('../../partials/admin/footer') %>

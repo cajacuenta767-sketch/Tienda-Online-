@@ -22,32 +22,39 @@
       <% } %>
     </div>
     <aside class="buy-box">
-      <div class="cluster">
-        <% if (product.category_name) { %><a class="badge badge--cat" href="/tienda/categoria/<%= product.category_slug %>"><%= product.category_name %></a><% } %>
-        <span class="badge badge--version">v<%= product.version %></span>
-        <% if (product.is_new) { %><span class="badge badge--new">Nuevo</span><% } %>
-        <% if (pct) { %><span class="badge badge--sale">-<%= pct %>% dto.</span><% } %>
+      <div class="cluster" style="justify-content:space-between">
+        <div class="cluster cluster--tight">
+          <% if (product.category_name) { %><a class="badge badge--cat" href="/tienda/categoria/<%= product.category_slug %>"><%= product.category_name %></a><% } %>
+          <span class="badge badge--version">v<%= product.version %></span>
+          <% if (product.is_new) { %><span class="badge badge--new">Nuevo</span><% } %>
+          <% if (pct) { %><span class="badge badge--sale">-<%= pct %>% dto.</span><% } %>
+        </div>
+        <%- include('../partials/fav-button', { product, size: 'lg' }) %>
       </div>
       <h1 class="buy-box__title"><%= product.title %></h1>
+      <a class="rating" href="#resenas"><%- stars(reviewSummary.avg) %> <% if (reviewSummary.count) { %><strong><%= Number(reviewSummary.avg).toFixed(1) %></strong> · <%= reviewSummary.count %> reseña<%= reviewSummary.count === 1 ? '' : 's' %><% } else { %><span>Sé el primero en opinar</span><% } %></a>
       <p class="buy-box__desc"><%= product.short_description %></p>
       <div class="buy-box__price"><%- include('../partials/price', { product, size: 'lg' }) %></div>
       <div class="buy-box__actions">
         <% if (canDownload) { %>
-          <a class="btn btn--mint btn--lg btn--block" href="/descargar/<%= product.id %>">Descargar v<%= product.version %></a>
+          <a class="btn btn--success btn--lg btn--block" href="/descargar/<%= product.id %>"><%- include('../partials/icons', { icon: 'download' }) %> Descargar v<%= product.version %></a>
           <p class="help text-muted"><%= hasMembership ? 'Incluido en tu membresía.' : 'Ya compraste este producto.' %></p>
         <% } else { %>
           <a class="btn btn--primary btn--lg btn--block" href="/pagar?producto=<%= product.slug %>">Comprar ahora</a>
-          <form method="post" action="/carrito/agregar/<%= product.id %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--secondary btn--block" type="submit">Añadir al carrito</button></form>
+          <div class="buy-box__row">
+            <form method="post" action="/carrito/agregar/<%= product.id %>" style="flex:1"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--secondary btn--block" type="submit">Añadir al carrito</button></form>
+            <% if (product.demo_url) { %><a class="btn btn--secondary" href="/demo/<%= product.slug %>"><%- include('../partials/icons', { icon: 'play' }) %> Demo</a><% } %>
+          </div>
         <% } %>
-        <% if (product.demo_url) { %><a class="btn btn--ghost btn--block" href="/demo/<%= product.slug %>">▶ Ver demo en vivo</a><% } %>
         <% if (waEnabled) { %><a class="btn btn--whatsapp btn--block" href="<%= waLink(product) %>" target="_blank" rel="noopener">Consultar por WhatsApp</a><% } %>
       </div>
       <ul class="buy-box__facts">
         <li><span>Licencia</span><strong><%= product.license %></strong></li>
         <li><span>Actualizaciones</span><strong>Incluidas de por vida</strong></li>
         <li><span>Entrega</span><strong>Descarga inmediata (.zip)</strong></li>
-        <li><span>Membresía</span><strong class="text-mint">Incluido en todos los planes</strong></li>
+        <li><span>Membresía</span><strong class="text-success">Incluido en todos los planes</strong></li>
         <li><span>Ventas</span><strong class="mono"><%= product.sales_count %></strong></li>
+        <li><span>Favoritos</span><strong class="mono"><%= product.favorites_count %></strong></li>
       </ul>
       <% if (product.tags.length) { %>
       <div class="cluster buy-box__tags">
@@ -84,6 +91,45 @@
         </ol>
       </article>
       <% } %>
+      <article class="detail-block" id="resenas">
+        <h2>Reseñas de clientes</h2>
+        <% if (reviewSummary.count) { %>
+          <div class="review-summary">
+            <div class="review-summary__avg"><strong><%= Number(reviewSummary.avg).toFixed(1) %></strong><%- stars(reviewSummary.avg, { size: 'lg' }) %><small><%= reviewSummary.count %> reseña<%= reviewSummary.count === 1 ? '' : 's' %></small></div>
+            <div class="review-bars">
+              <% [5, 4, 3, 2, 1].forEach(function (n) { const c = reviewSummary['s' + n] || 0; %><div class="review-bar"><span><%= n %> ★</span><div><i style="width:<%= reviewSummary.count ? Math.round(c / reviewSummary.count * 100) : 0 %>%"></i></div><span><%= c %></span></div><% }) %>
+            </div>
+          </div>
+          <% reviews.forEach(function (r) { %>
+            <div class="review">
+              <div class="review__head"><span class="review__who"><span class="avatar" aria-hidden="true"><%= r.user_name.charAt(0).toUpperCase() %></span><%= r.user_name %></span><span class="cluster cluster--tight"><%- stars(r.rating) %><time class="text-muted mono" datetime="<%= r.created_at %>"><%= fmtDate(r.created_at) %></time></span></div>
+              <% if (r.title) { %><div class="review__title"><%= r.title %></div><% } %>
+              <p class="review__body"><%= r.body %></p>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <p class="text-muted">Este producto todavía no tiene reseñas publicadas.</p>
+        <% } %>
+        <% if (currentUser && canReview) { %>
+          <form class="form card-form mt-3" method="post" action="/producto/<%= product.slug %>/resenas">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <h3 class="h3"><%= myReview ? 'Editar tu reseña' : 'Escribe tu reseña' %></h3>
+            <% if (myReview && myReview.status === 'pending') { %><div class="alert alert--info"><span>Tu reseña está pendiente de revisión.</span></div><% } %>
+            <div class="field"><span class="label">Tu calificación</span>
+              <div class="rate-input">
+                <% [5, 4, 3, 2, 1].forEach(function (n) { %><input type="radio" id="rate-<%= n %>" name="rating" value="<%= n %>" <%= (myReview ? myReview.rating : 5) === n ? 'checked' : '' %>><label for="rate-<%= n %>" title="<%= n %> estrellas"><span class="sr-only"><%= n %></span></label><% }) %>
+              </div>
+            </div>
+            <div class="field"><label class="label" for="rv-title">Título (opcional)</label><input class="input" id="rv-title" name="title" maxlength="120" value="<%= myReview ? myReview.title : '' %>"></div>
+            <div class="field"><label class="label" for="rv-body">Comentario</label><textarea class="textarea" id="rv-body" name="body" rows="4" minlength="10" required><%= myReview ? myReview.body : '' %></textarea></div>
+            <div class="form__actions"><button class="btn btn--primary" type="submit">Publicar reseña</button></div>
+          </form>
+        <% } else if (currentUser) { %>
+          <p class="help text-muted mt-3">Solo quienes compraron el producto o tienen membresía activa pueden dejar una reseña.</p>
+        <% } else { %>
+          <p class="help text-muted mt-3"><a href="/login?next=/producto/<%= product.slug %>">Inicia sesión</a> para dejar tu reseña tras comprar el producto.</p>
+        <% } %>
+      </article>
     </div>
     <div class="product-details__side">
       <% if (product.requirements) { %>
@@ -96,6 +142,10 @@
         <h2>Licencia</h2>
         <p><%= product.license %>.</p>
         <p class="text-muted">Puedes modificar el código y usarlo en un proyecto propio o de un cliente. No se permite la reventa o redistribución del código fuente. <a href="/terminos">Leer términos completos →</a></p>
+      </article>
+      <article class="detail-block detail-block--card">
+        <h2>Compra segura</h2>
+        <ul class="list"><li>Pago con tarjeta, PayPal, Bitcoin o WhatsApp</li><li>Descarga inmediata tras confirmar el pago</li><li>Soporte directo con el desarrollador</li></ul>
       </article>
     </div>
   </div>

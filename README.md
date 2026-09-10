@@ -1,6 +1,6 @@
 # DevMarket
 
-Marketplace en español para vender tus propios proyectos de software: sistemas web, plantillas y scripts con código fuente, demo en vivo, historial de actualizaciones y membresías. Inspirado en la estructura de tiendas como kosari.net, con diseño propio ("Ámbar Terminal": oscuro por defecto, tema claro incluido).
+Marketplace en español para vender tus propios proyectos de software: sistemas web, plantillas y scripts con código fuente, demo en vivo, historial de actualizaciones, reseñas, favoritos, cupones y membresías. Inspirado en la estructura de tiendas como kosari.net, con diseño propio "Azul océano": modo claro por defecto y modo oscuro con un botón (la elección se recuerda en el navegador).
 
 **Stack:** Node.js 18+ · Express 5 · SQLite (better-sqlite3) · EJS · CSS y JavaScript sin frameworks.
 
@@ -9,16 +9,17 @@ Marketplace en español para vender tus propios proyectos de software: sistemas 
 | Apartado | Ruta | Descripción |
 |---|---|---|
 | Inicio | `/` | Hero, destacados, categorías, nuevos lanzamientos, planes, ventajas, últimas actualizaciones |
-| Tienda | `/tienda`, `/tienda/categoria/:slug`, `/etiqueta/:slug` | Grid con búsqueda, orden y paginación |
-| Ficha de producto | `/producto/:slug` | Galería, precio y oferta, comprar / carrito / WhatsApp, características, requisitos, changelog, licencia, relacionados |
+| Tienda | `/tienda`, `/tienda/categoria/:slug`, `/etiqueta/:slug` | Grid con búsqueda instantánea (sugerencias al escribir), filtros por precio, tecnología, valoración y oferta, orden y paginación |
+| Ficha de producto | `/producto/:slug` | Galería, precio y oferta, comprar / carrito / WhatsApp, botón de favorito, características, requisitos, changelog, reseñas con estrellas, licencia, relacionados |
+| Favoritos | `/favoritos` | Lista de deseos; funciona sin cuenta (sesión) y se fusiona con la cuenta al iniciar sesión |
 | Demo en vivo | `/demo/:slug` | Barra superior + iframe con la demo del producto |
 | Nuevos lanzamientos | `/nuevos` | Productos recientes o marcados como nuevos |
 | Actualizaciones | `/actualizaciones` | Historial de versiones de todos los productos |
 | Membresía | `/membresia` | Planes Mensual / Anual / Vitalicia con comparativa y FAQ |
 | Nosotros, Contacto, Términos | `/nosotros`, `/contacto`, `/terminos` | Páginas informativas y formulario de contacto |
 | Cuenta | `/login`, `/registro`, `/cuenta` | Compras, descargas, membresía, cambio de contraseña |
-| Carrito y pago | `/carrito`, `/pagar`, `/pedidos/:id` | Checkout con WhatsApp, Stripe, PayPal, Bitcoin (Culqi preparado) |
-| Panel de administración | `/admin` | Productos (imágenes + ZIP + changelog), categorías, planes, pedidos, usuarios, ajustes, mensajes |
+| Carrito y pago | `/carrito`, `/pagar`, `/pedidos/:id` | Checkout con cupón de descuento y pago por WhatsApp, Stripe, PayPal, Bitcoin (Culqi preparado) |
+| Panel de administración | `/admin` | Productos (imágenes + ZIP + changelog), categorías, planes, cupones, pedidos, moderación de reseñas, usuarios, ajustes, mensajes |
 
 ## Instalación
 
@@ -35,6 +36,7 @@ Cuentas creadas por el seed:
 
 - Administrador: el `ADMIN_EMAIL` / `ADMIN_PASSWORD` de tu `.env` (se crea en el primer arranque si no existe ningún admin).
 - Cliente demo: `demo@devmarket.local` / `demo12345`.
+- Cupones de ejemplo: `BIENVENIDO10` (10 %), `DEV20` (20 % en productos desde $50), `MENOS15` ($15 desde $90).
 
 Para desarrollo con recarga automática: `npm run dev`.
 
@@ -85,6 +87,12 @@ Todos los proveedores viven en `src/payments/` y comparten la misma interfaz (`b
 
 Sin claves configuradas, WhatsApp y Bitcoin funcionan y Stripe/PayPal aparecen como "No configurado".
 
+## Reseñas, favoritos y cupones
+
+- **Reseñas**: solo quienes compraron el producto (o tienen membresía activa) pueden opinar. Quedan pendientes hasta que las apruebes en **Panel › Reseñas**; el promedio con estrellas aparece en la ficha y en las tarjetas, y las últimas aprobadas se muestran en el inicio.
+- **Favoritos**: el corazón de cada tarjeta guarda el producto sin recargar la página. Los visitantes sin cuenta los conservan en su sesión y se fusionan con su cuenta al registrarse o iniciar sesión.
+- **Cupones**: se crean en **Panel › Cupones** con porcentaje o monto fijo, compra mínima, usos máximos, vencimiento y alcance (todo, solo productos o solo membresías). El cliente lo escribe en el checkout y el descuento queda registrado en el pedido.
+
 ## Membresías
 
 Los planes se administran en **Panel › Planes**. Al pagarse un plan se crea una membresía con fecha de fin (o sin ella si es vitalicia). Mientras esté activa, `/cuenta › Descargas` muestra todo el catálogo y `/descargar/:id` entrega cualquier producto.
@@ -106,7 +114,7 @@ src/
 views/              Plantillas EJS (partials, pages, auth, account, cart, checkout, admin, errors)
 public/             css/app.css, js/app.js, js/checkout.js, img/
 scripts/            seed.js, migrate.js, create-admin.js, lib/ (generador de SVG y ZIP)
-tests/              smoke, auth y pagos
+tests/              smoke, auth, pagos, subidas y funciones (favoritos, reseñas, cupones, búsqueda)
 ```
 
 ## Despliegue
@@ -122,6 +130,7 @@ Contraseñas con bcrypt, sesiones en SQLite con cookie `httpOnly` + `SameSite=La
 ## Roadmap
 
 - Integración de Culqi (tarjetas, Yape y PagoEfectivo en soles).
+- Comparador de productos y notificaciones por correo de nuevas versiones.
 - Correos transaccionales (confirmación de compra, aviso de vencimiento de membresía).
 - Cupones de descuento y reseñas de clientes.
 

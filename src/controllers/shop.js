@@ -3,6 +3,7 @@ const products = require('../models/products');
 const categories = require('../models/categories');
 const tags = require('../models/tags');
 const changelog = require('../models/changelog');
+const { parseToCents } = require('../utils/money');
 
 function page(req) {
   const n = parseInt(req.query.page, 10);
@@ -13,7 +14,14 @@ function sort(req) {
 }
 function renderGrid(req, res, { title, subtitle, filters, breadcrumb, activeCategory = null, activeTag = null }) {
   const q = String(req.query.q || '').trim().slice(0, 100);
-  const result = products.list({ ...filters, q, sort: sort(req), page: page(req), perPage: 12 });
+  const minCents = parseToCents(req.query.min);
+  const maxCents = parseToCents(req.query.max);
+  const tagSlugs = [].concat(req.query.tech || []).map(String).filter(Boolean).slice(0, 10);
+  const minRating = [1, 2, 3, 4, 5].includes(Number(req.query.rating)) ? Number(req.query.rating) : null;
+  const onlyDiscount = req.query.oferta === '1';
+  const result = products.list({ ...filters, q, minCents, maxCents, tagSlugs, minRating, onlyDiscount, sort: sort(req), page: page(req), perPage: 12 });
+  const activeFilters = { min: req.query.min || '', max: req.query.max || '', tech: tagSlugs, rating: minRating, oferta: onlyDiscount };
+  const filterCount = (minCents !== null ? 1 : 0) + (maxCents !== null ? 1 : 0) + tagSlugs.length + (minRating ? 1 : 0) + (onlyDiscount ? 1 : 0);
   res.render('pages/shop', {
     title,
     subtitle,
@@ -22,6 +30,10 @@ function renderGrid(req, res, { title, subtitle, filters, breadcrumb, activeCate
     sort: sort(req),
     result,
     categories: categories.all(),
+    popularTags: tags.popular(14),
+    priceRange: products.priceRange(),
+    activeFilters,
+    filterCount,
     activeCategory,
     activeTag,
     basePath: req.path,

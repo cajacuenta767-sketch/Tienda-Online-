@@ -1,18 +1,23 @@
 (function () {
   'use strict';
   var root = document.documentElement;
-
-  // Tema claro/oscuro
-  function currentTheme() {
-    var stored = root.getAttribute('data-theme');
-    if (stored) return stored;
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  var toastEl = document.querySelector('[data-toast]');
+  var toastTimer = null;
+  function toast(msg) {
+    if (!toastEl) return;
+    toastEl.textContent = msg;
+    toastEl.classList.add('is-visible');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('is-visible'); }, 2400);
   }
+
+  // Tema claro/oscuro (claro por defecto)
   document.querySelectorAll('[data-theme-toggle]').forEach(function (btn) {
     btn.addEventListener('click', function () {
-      var next = currentTheme() === 'dark' ? 'light' : 'dark';
-      root.setAttribute('data-theme', next);
-      try { localStorage.setItem('dm-theme', next); } catch (e) {}
+      var dark = root.getAttribute('data-theme') !== 'dark';
+      if (dark) root.setAttribute('data-theme', 'dark'); else root.removeAttribute('data-theme');
+      try { localStorage.setItem('dm-theme', dark ? 'dark' : 'light'); } catch (e) {}
+      toast(dark ? 'Modo oscuro activado' : 'Modo claro activado');
     });
   });
 
@@ -37,7 +42,7 @@
     });
   }
 
-  // Dropdowns (clic para táctil)
+  // Dropdowns
   document.querySelectorAll('[data-dropdown]').forEach(function (dd) {
     var btn = dd.querySelector('button');
     if (!btn) return;
@@ -50,6 +55,74 @@
   document.addEventListener('click', function () {
     document.querySelectorAll('[data-dropdown].is-open').forEach(function (dd) { dd.classList.remove('is-open'); });
   });
+
+  // Búsqueda instantánea
+  var searchForm = document.querySelector('[data-search]');
+  if (searchForm) {
+    var input = searchForm.querySelector('input[name="q"]');
+    var box = searchForm.querySelector('[data-search-results]');
+    var timer = null, active = -1, items = [];
+    function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+    function money(c) { return '$' + (c / 100).toFixed(2); }
+    function close() { box.hidden = true; box.innerHTML = ''; active = -1; items = []; }
+    function render(data) {
+      items = data.items || [];
+      if (!items.length) { box.innerHTML = '<span class="search-suggest__more text-muted">Sin resultados</span>'; box.hidden = false; return; }
+      box.innerHTML = items.map(function (p) {
+        return '<a href="/producto/' + esc(p.slug) + '"><img src="' + esc(p.image || '/img/placeholder.svg') + '" alt=""><span><strong>' + esc(p.title) + '</strong><small>' + esc(p.category || '') + '</small></span><span class="price__current">' + money(p.price_cents) + '</span></a>';
+      }).join('') + '<a class="search-suggest__more" href="' + esc(data.more) + '">Ver todos los resultados →</a>';
+      box.hidden = false;
+    }
+    input.addEventListener('input', function () {
+      clearTimeout(timer);
+      var q = input.value.trim();
+      if (q.length < 2) return close();
+      timer = setTimeout(function () {
+        fetch('/api/buscar?q=' + encodeURIComponent(q), { headers: { Accept: 'application/json' } }).then(function (r) { return r.json(); }).then(render).catch(close);
+      }, 180);
+    });
+    input.addEventListener('keydown', function (e) {
+      var links = box.querySelectorAll('a');
+      if (box.hidden || !links.length) return;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        active = e.key === 'ArrowDown' ? Math.min(active + 1, links.length - 1) : Math.max(active - 1, 0);
+        links.forEach(function (l, i) { l.classList.toggle('is-active', i === active); });
+      } else if (e.key === 'Enter' && active >= 0) { e.preventDefault(); links[active].click(); }
+      else if (e.key === 'Escape') close();
+    });
+    document.addEventListener('click', function (e) { if (!searchForm.contains(e.target)) close(); });
+  }
+
+  // Favoritos sin recargar
+  document.querySelectorAll('[data-fav-form]').forEach(function (form) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var btn = form.querySelector('.fav-btn');
+      var token = form.querySelector('[name="_csrf"]').value;
+      fetch(form.getAttribute('action'), { method: 'POST', headers: { Accept: 'application/json', 'X-CSRF-Token': token, 'Content-Type': 'application/json' }, credentials: 'same-origin', body: '{}' })
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          btn.classList.toggle('is-active', j.added);
+          btn.setAttribute('aria-pressed', String(j.added));
+          document.querySelectorAll('[data-fav-count]').forEach(function (c) { c.textContent = j.count || ''; });
+          toast(j.added ? 'Añadido a favoritos ♥' : 'Quitado de favoritos');
+          if (!j.added && location.pathname === '/favoritos') { var card = form.closest('.product-card'); if (card) { card.style.opacity = '0'; setTimeout(function () { card.remove(); }, 250); } }
+        })
+        .catch(function () { form.submit(); });
+    });
+  });
+
+  // Filtros en móvil
+  var filters = document.querySelector('[data-filters]');
+  var filtersToggle = document.querySelector('[data-filters-toggle]');
+  if (filters && filtersToggle) {
+    filtersToggle.addEventListener('click', function () {
+      var collapsed = filters.getAttribute('data-collapsed') === 'true';
+      filters.setAttribute('data-collapsed', collapsed ? 'false' : 'true');
+      filtersToggle.textContent = collapsed ? 'Ocultar' : 'Mostrar';
+    });
+  }
 
   // Galería
   var gallery = document.querySelector('[data-gallery]');
@@ -69,7 +142,7 @@
   document.querySelectorAll('[data-copy]').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var text = btn.getAttribute('data-copy');
-      var done = function () { var old = btn.textContent; btn.textContent = 'Copiado ✔'; setTimeout(function () { btn.textContent = old; }, 1600); };
+      var done = function () { var old = btn.textContent; btn.textContent = 'Copiado ✔'; toast('Copiado al portapapeles'); setTimeout(function () { btn.textContent = old; }, 1600); };
       if (navigator.clipboard) navigator.clipboard.writeText(text).then(done);
       else { var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta); done(); }
     });
@@ -97,7 +170,7 @@
     });
   });
 
-  // Auto-submit en selects de filtro
+  // Auto-submit en selects
   document.querySelectorAll('[data-auto-submit]').forEach(function (sel) {
     sel.addEventListener('change', function () { sel.form && sel.form.submit(); });
   });

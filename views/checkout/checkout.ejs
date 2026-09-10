@@ -8,10 +8,20 @@
       <h2>Resumen</h2>
       <ul class="summary-list">
         <% items.forEach(function (it) { %><li><span><%= it.title %></span><span class="mono"><%= money(it.unit_cents) %></span></li><% }) %>
+        <% if (discount) { %><li class="is-discount"><span>Cupón <%= coupon.code %></span><span class="mono">− <%= money(discount) %></span></li><% } %>
       </ul>
-      <div class="summary-total"><span>Total</span><span class="mono price__current"><%= money(total) %></span></div>
+      <div class="summary-total"><span>Total</span><span class="price__current"><%= money(total) %></span></div>
       <% if (pen(total)) { %><p class="text-muted">≈ <%= pen(total) %> (referencial)</p><% } %>
-      <p class="help text-muted">Descarga inmediata con tarjeta o PayPal. Bitcoin y WhatsApp se confirman manualmente en menos de 24 h.</p>
+      <form class="coupon-box" method="post" action="/pagar/cupon">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>"><%- kindParam %>
+        <label class="label" for="coupon">¿Tienes un cupón?</label>
+        <% if (coupon) { %>
+          <div class="cluster" style="justify-content:space-between"><span class="badge badge--status-paid">✔ <%= coupon.code %> aplicado</span><button class="btn btn--ghost btn--sm" type="submit" name="code" value="">Quitar</button></div>
+        <% } else { %>
+          <div class="input-group"><input class="input input--sm mono" id="coupon" name="code" placeholder="CÓDIGO" style="text-transform:uppercase"><button class="btn btn--secondary btn--sm" type="submit">Aplicar</button></div>
+        <% } %>
+      </form>
+      <p class="help text-muted mt-2">Descarga inmediata con tarjeta o PayPal. Bitcoin y WhatsApp se confirman manualmente en menos de 24 h.</p>
     </aside>
     <div class="stack">
       <h2 class="h3">Elige cómo pagar</h2>

@@ -2,6 +2,7 @@
 const users = require('../models/users');
 const v = require('../utils/validate');
 const { safeNext } = require('../middleware/auth');
+const favorites = require('../services/favorites');
 
 const attempts = new Map();
 const WINDOW = 15 * 60 * 1000;
@@ -41,9 +42,13 @@ exports.login = (req, res) => {
   if (errors.length) {
     return res.status(401).render('auth/login', { title: 'Iniciar sesión', next, form: { email }, errors });
   }
+  const pendingFavorites = favorites.sessionIds(req);
+  const pendingCart = (req.session && req.session.cart) || [];
   req.session.regenerate((err) => {
     if (err) return res.status(500).render('errors/500', { title: 'Error', status: 500, message: 'No se pudo iniciar sesión.' });
     req.session.userId = user.id;
+    req.session.cart = pendingCart;
+    if (pendingFavorites.length) require('../models/favorites').mergeFromSession(user.id, pendingFavorites);
     req.flash('success', `Bienvenido de nuevo, ${user.name}.`);
     return res.redirect(next);
   });
@@ -68,8 +73,12 @@ exports.register = (req, res) => {
     return res.status(422).render('auth/register', { title: 'Crear cuenta', form, errors, next });
   }
   const user = users.create({ name: form.name, email: form.email, password });
+  const pendingFavorites = favorites.sessionIds(req);
+  const pendingCart = (req.session && req.session.cart) || [];
   req.session.regenerate(() => {
     req.session.userId = user.id;
+    req.session.cart = pendingCart;
+    if (pendingFavorites.length) require('../models/favorites').mergeFromSession(user.id, pendingFavorites);
     req.flash('success', 'Cuenta creada. ¡Bienvenido a DevMarket!');
     res.redirect(next);
   });

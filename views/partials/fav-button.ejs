@@ -1,0 +1,5 @@
+<% const _fav = isFavorite(product.id); %>
+<form method="post" action="/favoritos/<%= product.id %>" class="fav-form" data-fav-form>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <button type="submit" class="fav-btn <%= typeof size !== 'undefined' && size === 'lg' ? 'fav-btn--lg' : '' %> <%= _fav ? 'is-active' : '' %>" aria-pressed="<%= _fav %>" aria-label="<%= _fav ? 'Quitar de favoritos' : 'Añadir a favoritos' %>" title="<%= _fav ? 'Quitar de favoritos' : 'Añadir a favoritos' %>"><%- include('icons', { icon: 'heart' }) %></button>
+</form>

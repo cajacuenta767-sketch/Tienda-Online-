@@ -1,0 +1,14 @@
+<%- include('../../partials/admin/head') %>
+<div class="admin-toolbar"><span class="text-muted">Los clientes escriben el código en el checkout. Los usos se cuentan al confirmarse el pago.</span><a class="btn btn--primary" href="/admin/cupones/nuevo">+ Nuevo cupón</a></div>
+<div class="table-wrap"><table class="table">
+  <thead><tr><th>Código</th><th>Descuento</th><th>Mínimo</th><th>Aplica a</th><th>Usos</th><th>Vence</th><th>Estado</th><th></th></tr></thead>
+  <tbody>
+    <% coupons.forEach(function (c) { const expired = c.expires_at && new Date(c.expires_at + 'T23:59:59') < new Date(); %>
+      <tr><td class="mono"><strong><%= c.code %></strong></td><td class="mono"><%= c.type === 'percent' ? c.value + ' %' : money(c.value) %></td><td class="mono"><%= c.min_amount_cents ? money(c.min_amount_cents) : '—' %></td><td><%= { all: 'Todo', products: 'Productos', plans: 'Membresías' }[c.applies_to] %></td><td class="mono"><%= c.used_count %><%= c.max_uses ? ' / ' + c.max_uses : '' %></td><td class="mono"><%= c.expires_at || '—' %></td>
+        <td><span class="badge badge--status-<%= c.is_active && !expired ? 'paid' : 'cancelled' %>"><%= expired ? 'Vencido' : c.is_active ? 'Activo' : 'Inactivo' %></span></td>
+        <td class="cluster cluster--tight"><a class="btn btn--secondary btn--sm" href="/admin/cupones/<%= c.id %>/editar">Editar</a><form method="post" action="/admin/cupones/<%= c.id %>/eliminar" data-confirm="¿Eliminar el cupón <%= c.code %>?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--danger btn--sm" type="submit">✕</button></form></td></tr>
+    <% }) %>
+    <% if (!coupons.length) { %><tr><td colspan="8" class="text-muted">No hay cupones. <a href="/admin/cupones/nuevo">Crea el primero</a>.</td></tr><% } %>
+  </tbody>
+</table></div>
+<%- include('../../partials/admin/footer') %>

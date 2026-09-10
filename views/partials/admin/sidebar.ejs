@@ -1,13 +1,15 @@
 <aside class="admin-sidebar" id="admin-sidebar">
-  <a class="nav__logo" href="/admin"><img src="/img/logo.svg" alt="" width="28" height="28"><span><%= storeName %></span><small>admin</small></a>
+  <a class="nav__logo" href="/admin"><img src="/img/logo.svg" alt="" width="30" height="30"><span><%= storeName %></span><small>admin</small></a>
   <nav class="admin-nav" aria-label="Administración">
     <a href="/admin" class="<%= currentPath === '/admin' ? 'is-active' : '' %>">Dashboard</a>
     <a href="/admin/productos" class="<%= currentPath.startsWith('/admin/productos') ? 'is-active' : '' %>">Productos</a>
     <a href="/admin/categorias" class="<%= currentPath.startsWith('/admin/categorias') ? 'is-active' : '' %>">Categorías</a>
     <a href="/admin/planes" class="<%= currentPath.startsWith('/admin/planes') ? 'is-active' : '' %>">Planes</a>
+    <a href="/admin/cupones" class="<%= currentPath.startsWith('/admin/cupones') ? 'is-active' : '' %>">Cupones</a>
     <a href="/admin/pedidos" class="<%= currentPath.startsWith('/admin/pedidos') ? 'is-active' : '' %>">Pedidos</a>
+    <a href="/admin/resenas" class="<%= currentPath.startsWith('/admin/resenas') ? 'is-active' : '' %>">Reseñas <% if (typeof adminBadges !== 'undefined' && adminBadges.reviews) { %><span class="count"><%= adminBadges.reviews %></span><% } %></a>
     <a href="/admin/usuarios" class="<%= currentPath.startsWith('/admin/usuarios') ? 'is-active' : '' %>">Usuarios</a>
-    <a href="/admin/mensajes" class="<%= currentPath.startsWith('/admin/mensajes') ? 'is-active' : '' %>">Mensajes</a>
+    <a href="/admin/mensajes" class="<%= currentPath.startsWith('/admin/mensajes') ? 'is-active' : '' %>">Mensajes <% if (typeof adminBadges !== 'undefined' && adminBadges.messages) { %><span class="count"><%= adminBadges.messages %></span><% } %></a>
     <a href="/admin/ajustes" class="<%= currentPath.startsWith('/admin/ajustes') ? 'is-active' : '' %>">Ajustes</a>
   </nav>
   <div class="admin-sidebar__foot">

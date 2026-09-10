@@ -22,7 +22,7 @@
               </tr>
             <% }) %>
           </tbody>
-          <tfoot><tr><th>Total</th><th class="mono"><%= money(order.amount_cents, order.currency) %></th><th></th></tr></tfoot>
+          <tfoot><% if (order.discount_cents) { %><tr><th>Subtotal</th><th class="mono"><%= money(order.subtotal_cents || order.amount_cents + order.discount_cents, order.currency) %></th><th></th></tr><tr><th class="text-success">Cupón <%= order.coupon_code %></th><th class="mono text-success">− <%= money(order.discount_cents, order.currency) %></th><th></th></tr><% } %><tr><th>Total</th><th class="mono"><%= money(order.amount_cents, order.currency) %></th><th></th></tr></tfoot>
         </table></div>
       </div>
       <% if (order.status === 'pending' && order.provider === 'btc') { %>

@@ -4,6 +4,7 @@ const payments = require('../payments');
 const ordersModel = require('../models/orders');
 const ordersService = require('../services/orders');
 const cart = require('../services/cart');
+const coupons = require('../models/coupons');
 
 function selectionFrom(src) {
   if (src.producto || src.product) return { kind: 'product', ref: String(src.producto || src.product) };
@@ -21,12 +22,17 @@ exports.show = (req, res, next) => {
     req.flash('error', err.message);
     return res.redirect('/carrito');
   }
-  const total = items.reduce((s, it) => s + it.unit_cents * (it.quantity || 1), 0);
+  const subtotal = items.reduce((s, it) => s + it.unit_cents * (it.quantity || 1), 0);
+  const applied = ordersService.couponFor(req, items);
+  const discount = applied ? applied.discount_cents : 0;
   res.render('checkout/checkout', {
     title: 'Finalizar compra',
     selection,
     items,
-    total,
+    subtotal,
+    discount,
+    coupon: applied ? applied.coupon : null,
+    total: Math.max(0, subtotal - discount),
     providers: payments.list(),
     clientConfig: Object.fromEntries(payments.providers.map((p) => [p.id, p.clientConfig()])),
   });
@@ -65,6 +71,27 @@ function backTo(selection) {
   if (selection.kind === 'plan') return `/pagar?plan=${encodeURIComponent(selection.ref)}`;
   return '/pagar';
 }
+
+exports.applyCoupon = (req, res, next) => {
+  const selection = selectionFrom(req.body);
+  const code = String(req.body.code || '').trim().toUpperCase();
+  let items;
+  try { items = ordersService.resolveItems(req, selection); } catch (err) { return next(err); }
+  if (!code) {
+    delete req.session.coupon;
+    req.flash('info', 'Cupón quitado.');
+    return res.redirect(backTo(selection));
+  }
+  const result = coupons.evaluate(code, items);
+  if (!result.ok) {
+    delete req.session.coupon;
+    req.flash('error', result.error);
+  } else {
+    req.session.coupon = result.coupon.code;
+    req.flash('success', `Cupón ${result.coupon.code} aplicado: ahorras ${(result.discount_cents / 100).toFixed(2)} USD.`);
+  }
+  return res.redirect(backTo(selection));
+};
 
 exports.whatsapp = (req, res, next) => {
   const provider = payments.get('whatsapp');

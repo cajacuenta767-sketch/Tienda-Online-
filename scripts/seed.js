@@ -13,6 +13,9 @@ const usersModel = require('../src/models/users');
 const ordersModel = require('../src/models/orders');
 const settingsModel = require('../src/models/settings');
 const ordersService = require('../src/services/orders');
+const reviewsModel = require('../src/models/reviews');
+const couponsModel = require('../src/models/coupons');
+const favoritesModel = require('../src/models/favorites');
 const { bootstrap } = require('../src/services/bootstrap');
 const { screenshot } = require('./lib/svg');
 const { createZip } = require('./lib/minizip');
@@ -123,6 +126,29 @@ const PRODUCTS = [
   },
 ];
 
+const COUPONS = [
+  { code: 'BIENVENIDO10', type: 'percent', value: 10, min_amount_cents: 0, max_uses: null, applies_to: 'all', expires_at: null, is_active: 1 },
+  { code: 'DEV20', type: 'percent', value: 20, min_amount_cents: 5000, max_uses: 100, applies_to: 'products', expires_at: '2026-12-31', is_active: 1 },
+  { code: 'MENOS15', type: 'fixed', value: 1500, min_amount_cents: 9000, max_uses: null, applies_to: 'all', expires_at: null, is_active: 1 },
+];
+
+const REVIEWERS = [
+  { name: 'Jorge Ramírez', email: 'jorge@cliente.local' },
+  { name: 'María Alvarado', email: 'maria@cliente.local' },
+  { name: 'Luis Paredes', email: 'luis@cliente.local' },
+  { name: 'Carla Quispe', email: 'carla@cliente.local' },
+];
+
+const REVIEWS = [
+  { slug: 'sistema-inventario-ventas', who: 0, rating: 5, title: 'Lo instalé en dos tiendas', body: 'Muy completo. El módulo de caja y los reportes por sucursal me ahorraron semanas de trabajo. Soporte rápido por WhatsApp.' },
+  { slug: 'sistema-inventario-ventas', who: 1, rating: 4, title: 'Buen código, fácil de adaptar', body: 'El código está ordenado y comentado. Cambié la impresión de tickets sin problemas. Le faltaría un módulo de compras más detallado.' },
+  { slug: 'sistema-inventario-ventas', who: 2, rating: 5, title: 'Recomendado', body: 'Funciona tal cual la demo. La instalación en cPanel tomó menos de una hora.' },
+  { slug: 'facturafacil-facturacion-electronica', who: 3, rating: 5, title: 'Cobros al día', body: 'Los recordatorios automáticos me redujeron la morosidad. Muy recomendable para pymes.' },
+  { slug: 'reservapro-citas-y-reservas', who: 1, rating: 4, title: 'Ideal para mi consultorio', body: 'La página pública de reservas es clara y mis pacientes la usan sin ayuda. Pedí una personalización y la entregaron en dos días.' },
+  { slug: 'bot-whatsapp-pedidos', who: 0, rating: 5, title: 'Pedidos sin atender el teléfono', body: 'El bot arma el pedido completo y me llega el resumen listo. Se configura en un solo archivo.' },
+  { slug: 'adminkit-plantilla-panel', who: 2, rating: 4, title: 'Plantilla limpia', body: 'Componentes bien pensados y modo oscuro incluido. Conecté mi API en una tarde.' },
+];
+
 const PLANS = [
   { name: 'Mensual', slug: 'mensual', description: 'Acceso a todos los sistemas durante 30 días.', features: 'Descarga ilimitada de todos los productos\nActualizaciones durante la membresía\nSoporte por WhatsApp', price_cents: 1900, duration_days: 30, is_active: 1, is_featured: 0, sort_order: 1 },
   { name: 'Anual', slug: 'anual', description: 'Un año completo de acceso con el mejor precio por mes.', features: 'Todo lo del plan Mensual\nAhorra más del 55 % frente al mensual\nAcceso anticipado a nuevos lanzamientos\nSoporte prioritario', price_cents: 9900, duration_days: 365, is_active: 1, is_featured: 1, sort_order: 2 },
@@ -162,7 +188,7 @@ function fresh(db) {
   if (config.IS_PROD && !config.SEED_ALLOW_FRESH) throw new Error('En producción, --fresh requiere SEED_ALLOW_FRESH=true.');
   db.exec(`DELETE FROM downloads; DELETE FROM memberships; DELETE FROM order_items; DELETE FROM orders; DELETE FROM changelog;
     DELETE FROM product_tags; DELETE FROM tags; DELETE FROM product_images; DELETE FROM products; DELETE FROM categories; DELETE FROM plans;
-    DELETE FROM contact_messages; DELETE FROM sessions; DELETE FROM users; DELETE FROM settings; DELETE FROM sqlite_sequence;`);
+    DELETE FROM reviews; DELETE FROM favorites; DELETE FROM coupons; DELETE FROM contact_messages; DELETE FROM sessions; DELETE FROM users; DELETE FROM settings; DELETE FROM sqlite_sequence;`);
 }
 
 function seed({ db = getDb(), minimal = false, freshRun = false } = {}) {
@@ -197,6 +223,20 @@ function seed({ db = getDb(), minimal = false, freshRun = false } = {}) {
       [{ item_type: 'product', product_id: first.id, title: first.title, unit_cents: productsModel.effectivePrice(first), quantity: 1 }]);
     ordersService.markPaid(order.id, { provider_data: { seeded: true } });
   }
+  for (const c of COUPONS) couponsModel.upsertByCode(c);
+  const reviewers = REVIEWERS.map((r) => usersModel.findByEmail(r.email) || usersModel.create({ name: r.name, email: r.email, password: 'cliente12345' }));
+  for (const rv of REVIEWS) {
+    const product = productsModel.bySlug(rv.slug, { withRelations: false });
+    if (!product) continue;
+    const user = reviewers[rv.who];
+    if (!ordersModel.userOwnsProduct(user.id, product.id)) {
+      const order = ordersModel.create({ user_id: user.id, provider: 'manual', amount_cents: productsModel.effectivePrice(product) },
+        [{ item_type: 'product', product_id: product.id, title: product.title, unit_cents: productsModel.effectivePrice(product), quantity: 1 }]);
+      ordersService.markPaid(order.id, { provider_data: { seeded: true } });
+    }
+    reviewsModel.create({ product_id: product.id, user_id: user.id, rating: rv.rating, title: rv.title, body: rv.body, status: 'approved' });
+    favoritesModel.add(user.id, product.id);
+  }
   settingsModel.set('seeded_at', new Date().toISOString());
   return { products: list.length, plans: PLANS.length, categories: CATEGORIES.length };
 }
@@ -204,8 +244,8 @@ function seed({ db = getDb(), minimal = false, freshRun = false } = {}) {
 if (require.main === module) {
   const freshRun = process.argv.includes('--fresh');
   const result = seed({ freshRun });
-  console.log(`Seed completado: ${result.categories} categorías, ${result.products} productos, ${result.plans} planes.`);
+  console.log(`Seed completado: ${result.categories} categorías, ${result.products} productos, ${result.plans} planes, ${COUPONS.length} cupones, ${REVIEWS.length} reseñas.`);
   console.log(`Admin: ${config.ADMIN_EMAIL || '(define ADMIN_EMAIL en .env)'} · Cliente demo: demo@devmarket.local / demo12345`);
 }
 
-module.exports = { seed, PRODUCTS, PLANS, CATEGORIES };
+module.exports = { seed, PRODUCTS, PLANS, CATEGORIES, COUPONS, REVIEWS };

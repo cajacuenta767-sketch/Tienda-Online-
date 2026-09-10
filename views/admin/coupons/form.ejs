@@ -1,0 +1,24 @@
+<%- include('../../partials/admin/head') %>
+<% if (errors.length) { %><div class="alert alert--error"><ul><% errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul></div><% } %>
+<form class="form admin-form" method="post" action="<%= coupon ? `/admin/cupones/${coupon.id}/editar` : '/admin/cupones/nuevo' %>">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div class="admin-form__grid">
+    <section class="admin-block">
+      <div class="form-grid">
+        <div class="field"><label class="label" for="cp-code">Código</label><input class="input mono" id="cp-code" name="code" required value="<%= form.code || '' %>" placeholder="BIENVENIDO10" style="text-transform:uppercase"></div>
+        <div class="field"><label class="label" for="cp-type">Tipo</label><select class="select" id="cp-type" name="type"><option value="percent" <%= form.type === 'percent' ? 'selected' : '' %>>Porcentaje (%)</option><option value="fixed" <%= form.type === 'fixed' ? 'selected' : '' %>>Monto fijo (USD)</option></select></div>
+        <div class="field"><label class="label" for="cp-value">Valor</label><input class="input mono" id="cp-value" name="value" type="number" step="0.01" min="0" required value="<%= form.type === 'fixed' && form.value ? (form.value / 100).toFixed(2) : (form.value || '') %>"><span class="help">Si es porcentaje: 10 = 10 %. Si es fijo: monto en USD.</span></div>
+        <div class="field"><label class="label" for="cp-min">Compra mínima (USD)</label><input class="input mono" id="cp-min" name="min_amount" type="number" step="0.01" min="0" value="<%= form.min_amount_cents ? (form.min_amount_cents / 100).toFixed(2) : '' %>"></div>
+        <div class="field"><label class="label" for="cp-max">Usos máximos</label><input class="input mono" id="cp-max" name="max_uses" type="number" min="1" value="<%= form.max_uses || '' %>" placeholder="ilimitado"></div>
+        <div class="field"><label class="label" for="cp-exp">Vence el</label><input class="input" id="cp-exp" name="expires_at" type="date" value="<%= form.expires_at || '' %>"></div>
+        <div class="field"><label class="label" for="cp-applies">Aplica a</label><select class="select" id="cp-applies" name="applies_to"><option value="all" <%= form.applies_to === 'all' ? 'selected' : '' %>>Todo</option><option value="products" <%= form.applies_to === 'products' ? 'selected' : '' %>>Solo productos</option><option value="plans" <%= form.applies_to === 'plans' ? 'selected' : '' %>>Solo membresías</option></select></div>
+        <label class="checkbox"><input type="checkbox" name="is_active" value="1" <%= form.is_active ? 'checked' : '' %>> Activo</label>
+      </div>
+    </section>
+    <aside class="stack">
+      <div class="form__actions"><button class="btn btn--primary btn--block btn--lg" type="submit"><%= coupon ? 'Guardar cambios' : 'Crear cupón' %></button><a class="btn btn--ghost btn--block" href="/admin/cupones">Volver</a></div>
+      <% if (coupon) { %><section class="admin-block"><h2>Uso</h2><p class="mono"><%= coupon.used_count %> usos registrados</p></section><% } %>
+    </aside>
+  </div>
+</form>
+<%- include('../../partials/admin/footer') %>

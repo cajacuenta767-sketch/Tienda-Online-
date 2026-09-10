@@ -6,6 +6,7 @@ const { requireLogin } = require('../middleware/auth');
 
 const r = Router();
 r.get('/pagar', requireLogin, checkout.show);
+r.post('/pagar/cupon', requireLogin, csrf.verify, checkout.applyCoupon);
 r.get('/pago/whatsapp/:slug', checkout.whatsapp);
 r.post('/pago/stripe/crear', requireLogin, csrf.verify, checkout.stripeCreate);
 r.get('/pago/stripe/retorno', requireLogin, checkout.stripeReturn);

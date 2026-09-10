@@ -21,15 +21,15 @@ function items(orderId) {
     FROM order_items oi LEFT JOIN products p ON p.id = oi.product_id LEFT JOIN plans pl ON pl.id = oi.plan_id
     WHERE oi.order_id = ? ORDER BY oi.id`).all(orderId);
 }
-function create({ user_id, provider, amount_cents, currency = 'USD', provider_ref = null, provider_data = {}, customer_note = null }, lineItems) {
+function create({ user_id, provider, amount_cents, currency = 'USD', provider_ref = null, provider_data = {}, customer_note = null, coupon_code = null, discount_cents = 0, subtotal_cents = null }, lineItems) {
   const db = getDb();
-  const insertOrder = db.prepare(`INSERT INTO orders (user_id, provider, amount_cents, currency, provider_ref, provider_data, customer_note)
-    VALUES (?, ?, ?, ?, ?, ?, ?)`);
+  const insertOrder = db.prepare(`INSERT INTO orders (user_id, provider, amount_cents, currency, provider_ref, provider_data, customer_note, coupon_code, discount_cents, subtotal_cents)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
   const setRef = db.prepare('UPDATE orders SET reference = ? WHERE id = ?');
   const insertItem = db.prepare(`INSERT INTO order_items (order_id, item_type, product_id, plan_id, title, unit_cents, quantity)
     VALUES (?, ?, ?, ?, ?, ?, ?)`);
   const tx = db.transaction(() => {
-    const info = insertOrder.run(user_id, provider, amount_cents, currency, provider_ref, JSON.stringify(provider_data || {}), customer_note);
+    const info = insertOrder.run(user_id, provider, amount_cents, currency, provider_ref, JSON.stringify(provider_data || {}), customer_note, coupon_code, discount_cents || 0, subtotal_cents ?? amount_cents + (discount_cents || 0));
     const id = Number(info.lastInsertRowid);
     setRef.run(orderReference(id), id);
     for (const it of lineItems) {

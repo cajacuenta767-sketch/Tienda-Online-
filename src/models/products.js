@@ -10,26 +10,40 @@ const SORTS = {
   price_asc: 'COALESCE(p.discount_cents, p.price_cents) ASC, p.id DESC',
   price_desc: 'COALESCE(p.discount_cents, p.price_cents) DESC, p.id DESC',
   popular: 'p.sales_count DESC, p.downloads_count DESC, p.id DESC',
+  rating: 'rating_avg DESC, rating_count DESC, p.id DESC',
   name: 'p.title COLLATE NOCASE ASC',
 };
 
 const BASE_SELECT = `SELECT p.*, c.name AS category_name, c.slug AS category_slug,
-  (SELECT path FROM product_images i WHERE i.product_id = p.id ORDER BY i.sort_order, i.id LIMIT 1) AS image
+  (SELECT path FROM product_images i WHERE i.product_id = p.id ORDER BY i.sort_order, i.id LIMIT 1) AS image,
+  (SELECT COALESCE(AVG(r.rating), 0) FROM reviews r WHERE r.product_id = p.id AND r.status = 'approved') AS rating_avg,
+  (SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id AND r.status = 'approved') AS rating_count,
+  (SELECT COUNT(*) FROM favorites f WHERE f.product_id = p.id) AS favorites_count
   FROM products p LEFT JOIN categories c ON c.id = p.category_id`;
 
-function list({ q = '', categorySlug = null, tagSlug = null, sort = 'recent', page = 1, perPage = 12, onlyActive = true, featured = null, isNew = null, sinceDays = null } = {}) {
+function list({ q = '', categorySlug = null, tagSlug = null, tagSlugs = [], minCents = null, maxCents = null, minRating = null, onlyDiscount = false,
+  sort = 'recent', page = 1, perPage = 12, onlyActive = true, featured = null, isNew = null, sinceDays = null, ids = null } = {}) {
   const db = getDb();
   const where = [];
   const params = {};
   if (onlyActive) where.push('p.is_active = 1');
-  if (q) { where.push('(p.title LIKE @q OR p.short_description LIKE @q OR p.long_description LIKE @q)'); params.q = `%${q}%`; }
+  if (q) { where.push('(p.title LIKE @q OR p.short_description LIKE @q OR p.long_description LIKE @q OR p.id IN (SELECT pt.product_id FROM product_tags pt JOIN tags t ON t.id = pt.tag_id WHERE t.name LIKE @q))'); params.q = `%${q}%`; }
   if (categorySlug) { where.push('c.slug = @categorySlug'); params.categorySlug = categorySlug; }
   if (tagSlug) { where.push('p.id IN (SELECT pt.product_id FROM product_tags pt JOIN tags t ON t.id = pt.tag_id WHERE t.slug = @tagSlug)'); params.tagSlug = tagSlug; }
+  if (tagSlugs && tagSlugs.length) {
+    tagSlugs.forEach((s, i) => { params[`ts${i}`] = s; });
+    where.push(`p.id IN (SELECT pt.product_id FROM product_tags pt JOIN tags t ON t.id = pt.tag_id WHERE t.slug IN (${tagSlugs.map((_, i) => `@ts${i}`).join(',')}))`);
+  }
+  if (minCents !== null && minCents !== undefined) { where.push('COALESCE(p.discount_cents, p.price_cents) >= @minCents'); params.minCents = minCents; }
+  if (maxCents !== null && maxCents !== undefined) { where.push('COALESCE(p.discount_cents, p.price_cents) <= @maxCents'); params.maxCents = maxCents; }
+  if (minRating) { where.push('(SELECT COALESCE(AVG(r.rating), 0) FROM reviews r WHERE r.product_id = p.id AND r.status = \'approved\') >= @minRating'); params.minRating = minRating; }
+  if (onlyDiscount) where.push('p.discount_cents IS NOT NULL AND p.discount_cents < p.price_cents');
   if (featured !== null) { where.push('p.is_featured = @featured'); params.featured = featured ? 1 : 0; }
   if (isNew !== null) {
-    if (sinceDays) { where.push(`(p.is_new = 1 OR p.created_at >= datetime('now', '-${Number(sinceDays)} days'))`); }
+    if (sinceDays) where.push(`(p.is_new = 1 OR p.created_at >= datetime('now', '-${Number(sinceDays)} days'))`);
     else { where.push('p.is_new = @isNew'); params.isNew = isNew ? 1 : 0; }
   }
+  if (ids) { if (!ids.length) return { rows: [], total: 0, page, perPage, pages: 1 }; where.push(`p.id IN (${ids.map(Number).join(',')})`); }
   const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
   const orderSql = SORTS[sort] || SORTS.recent;
   params.limit = perPage;
@@ -39,11 +53,22 @@ function list({ q = '', categorySlug = null, tagSlug = null, sort = 'recent', pa
   return { rows, total, page, perPage, pages: Math.max(1, Math.ceil(total / perPage)) };
 }
 
+function priceRange() {
+  return getDb().prepare('SELECT COALESCE(MIN(COALESCE(discount_cents, price_cents)),0) AS min, COALESCE(MAX(COALESCE(discount_cents, price_cents)),0) AS max FROM products WHERE is_active = 1').get();
+}
+function suggest(q, limit = 6) {
+  if (!q) return [];
+  return getDb().prepare(`${BASE_SELECT} WHERE p.is_active = 1 AND (p.title LIKE @q OR p.short_description LIKE @q OR p.id IN (SELECT pt.product_id FROM product_tags pt JOIN tags t ON t.id = pt.tag_id WHERE t.name LIKE @q))
+    ORDER BY (p.title LIKE @qs) DESC, p.sales_count DESC LIMIT @limit`).all({ q: `%${q}%`, qs: `${q}%`, limit });
+}
 function featured(limit = 8) {
   return getDb().prepare(`${BASE_SELECT} WHERE p.is_active = 1 AND p.is_featured = 1 ORDER BY p.updated_at DESC LIMIT ?`).all(limit);
 }
 function newest(limit = 4) {
   return getDb().prepare(`${BASE_SELECT} WHERE p.is_active = 1 ORDER BY p.is_new DESC, p.created_at DESC LIMIT ?`).all(limit);
+}
+function topRated(limit = 4) {
+  return getDb().prepare(`${BASE_SELECT} WHERE p.is_active = 1 ORDER BY rating_avg DESC, rating_count DESC, p.sales_count DESC LIMIT ?`).all(limit);
 }
 function related(product, limit = 4) {
   return getDb().prepare(`${BASE_SELECT} WHERE p.is_active = 1 AND p.id != ? AND (p.category_id = ? OR ? IS NULL)
@@ -128,6 +153,7 @@ function stats() {
     total: db.prepare('SELECT COUNT(*) AS c FROM products').get().c,
     active: db.prepare('SELECT COUNT(*) AS c FROM products WHERE is_active = 1').get().c,
     downloads: db.prepare('SELECT COALESCE(SUM(downloads_count),0) AS c FROM products').get().c,
+    sales: db.prepare('SELECT COALESCE(SUM(sales_count),0) AS c FROM products').get().c,
   };
 }
 function adminList({ q = '', page = 1, perPage = 25 } = {}) {
@@ -146,4 +172,4 @@ function discountPct(p) {
   return Math.round((1 - p.discount_cents / p.price_cents) * 100);
 }
 
-module.exports = { list, featured, newest, related, bySlug, byId, byIds, hydrate, slugExists, create, update, setFile, setVersion, remove, incrementDownloads, incrementSales, stats, adminList, effectivePrice, discountPct, SORTS };
+module.exports = { list, priceRange, suggest, featured, newest, topRated, related, bySlug, byId, byIds, hydrate, slugExists, create, update, setFile, setVersion, remove, incrementDownloads, incrementSales, stats, adminList, effectivePrice, discountPct, SORTS };

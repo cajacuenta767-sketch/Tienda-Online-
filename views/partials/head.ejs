@@ -5,17 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><%= title ? `${title} · ${storeName}` : `${storeName} — ${settings.tagline || 'Sistemas web, scripts y plantillas'}` %></title>
   <meta name="description" content="<%= typeof metaDescription !== 'undefined' && metaDescription ? metaDescription : (settings.tagline || 'Sistemas web, scripts y plantillas con código fuente, demo en vivo y actualizaciones incluidas.') %>">
+  <meta name="theme-color" content="#2563EB">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="/css/app.css">
   <script>
     (function () {
-      try {
-        var t = localStorage.getItem('dm-theme');
-        if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
-      } catch (e) {}
+      try { if (localStorage.getItem('dm-theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); } catch (e) {}
     })();
   </script>
 </head>

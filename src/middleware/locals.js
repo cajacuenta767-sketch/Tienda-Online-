@@ -5,6 +5,8 @@ const categories = require('../models/categories');
 const users = require('../models/users');
 const products = require('../models/products');
 const cart = require('../services/cart');
+const favorites = require('../services/favorites');
+const { escapeHtml } = require('../utils/format');
 const payments = require('../payments');
 const whatsapp = require('../payments/whatsapp');
 const { formatCents, convert } = require('../utils/money');
@@ -30,6 +32,16 @@ module.exports = function locals(req, res, next) {
     }
   }
   req.currentUser = res.locals.currentUser;
+  const favIds = favorites.ids(req);
+  res.locals.favoritesCount = favIds.length;
+  res.locals.isFavorite = (id) => favIds.includes(Number(id));
+  res.locals.stars = (avg, { size = '' } = {}) => {
+    const n = Math.round(Number(avg || 0) * 2) / 2;
+    let html = `<span class="stars ${size ? 'stars--' + size : ''}" aria-label="${n} de 5">`;
+    for (let i = 1; i <= 5; i++) html += `<span class="star ${n >= i ? 'is-full' : n >= i - 0.5 ? 'is-half' : ''}"></span>`;
+    return html + '</span>';
+  };
+  res.locals.escapeHtml = escapeHtml;
 
   res.locals.money = (cents, currency = 'USD') => formatCents(cents, currency);
   res.locals.pen = (cents) => (all.show_pen === '1' ? formatCents(convert(cents, all.pen_rate || 3.75), 'PEN') : '');

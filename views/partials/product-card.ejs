@@ -7,19 +7,20 @@
       <% if (pct) { %><span class="badge badge--sale">-<%= pct %>%</span><% } %>
     </div>
   </a>
+  <div class="product-card__fav"><%- include('fav-button', { product }) %></div>
   <div class="product-card__body">
     <div class="product-card__meta">
       <% if (product.category_name) { %><a class="badge badge--cat" href="/tienda/categoria/<%= product.category_slug %>"><%= product.category_name %></a><% } %>
-      <span class="badge badge--version">v<%= product.version %></span>
+      <span class="rating"><%- stars(product.rating_avg) %> <% if (product.rating_count) { %><strong><%= Number(product.rating_avg).toFixed(1) %></strong> (<%= product.rating_count %>)<% } else { %><span>Sin reseñas</span><% } %></span>
     </div>
     <h3 class="product-card__title"><a href="/producto/<%= product.slug %>"><%= product.title %></a></h3>
     <p class="product-card__desc truncate-2"><%= product.short_description %></p>
     <div class="product-card__footer">
       <%- include('price', { product }) %>
-      <span class="product-card__sales text-muted"><%= product.sales_count %> ventas</span>
+      <span class="badge badge--version">v<%= product.version %></span>
     </div>
     <div class="product-card__actions">
-      <% if (product.demo_url) { %><a class="btn btn--secondary btn--sm" href="/demo/<%= product.slug %>">Ver demo</a><% } %>
+      <% if (product.demo_url) { %><a class="btn btn--secondary btn--sm" href="/demo/<%= product.slug %>">Demo</a><% } %>
       <a class="btn btn--ghost btn--sm" href="/producto/<%= product.slug %>">Detalles</a>
       <a class="btn btn--primary btn--sm" href="/pagar?producto=<%= product.slug %>">Comprar</a>
     </div>

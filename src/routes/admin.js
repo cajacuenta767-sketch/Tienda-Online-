@@ -11,10 +11,12 @@ const orders = require('../controllers/admin/orders');
 const users = require('../controllers/admin/users');
 const settings = require('../controllers/admin/settings');
 const messages = require('../controllers/admin/messages');
+const reviews = require('../controllers/admin/reviews');
+const coupons = require('../controllers/admin/coupons');
 
 const r = Router();
 r.use(requireAdmin);
-r.use((req, res, next) => { res.locals.isAdminArea = true; next(); });
+r.use((req, res, next) => { res.locals.isAdminArea = true; res.locals.adminBadges = { reviews: require('../models/reviews').pendingCount(), messages: require('../models/contactMessages').unreadCount() }; next(); });
 
 r.get('/', dashboard.index);
 
@@ -51,6 +53,17 @@ r.post('/usuarios/:id/rol', csrf.verify, users.setRole);
 
 r.get('/ajustes', settings.form);
 r.post('/ajustes', csrf.verify, settings.save);
+
+r.get('/resenas', reviews.index);
+r.post('/resenas/:id/estado', csrf.verify, reviews.setStatus);
+r.post('/resenas/:id/eliminar', csrf.verify, reviews.destroy);
+
+r.get('/cupones', coupons.index);
+r.get('/cupones/nuevo', coupons.newForm);
+r.post('/cupones/nuevo', csrf.verify, coupons.create);
+r.get('/cupones/:id/editar', coupons.editForm);
+r.post('/cupones/:id/editar', csrf.verify, coupons.update);
+r.post('/cupones/:id/eliminar', csrf.verify, coupons.destroy);
 
 r.get('/mensajes', messages.index);
 r.post('/mensajes/:id/leido', csrf.verify, messages.markRead);

@@ -5,6 +5,10 @@ const shop = require('../controllers/shop');
 const product = require('../controllers/product');
 const pages = require('../controllers/pages');
 const csrf = require('../middleware/csrf');
+const favorites = require('../controllers/favorites');
+const reviews = require('../controllers/reviews');
+const api = require('../controllers/api');
+const { requireLogin } = require('../middleware/auth');
 
 const r = Router();
 r.get('/', home.index);
@@ -20,6 +24,10 @@ r.get('/nosotros', pages.about);
 r.get('/contacto', pages.contact);
 r.post('/contacto', csrf.verify, pages.contactSubmit);
 r.get('/terminos', pages.terms);
+r.get('/favoritos', favorites.index);
+r.post('/favoritos/:productId', csrf.verify, favorites.toggle);
+r.post('/producto/:slug/resenas', requireLogin, csrf.verify, reviews.create);
+r.get('/api/buscar', api.search);
 r.get('/health', (req, res) => res.json({ ok: true }));
 
 module.exports = r;

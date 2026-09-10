@@ -3,7 +3,7 @@
   <div class="stat"><span class="stat__label">Ingresos (pagado)</span><span class="stat__value mono"><%= money(stats.revenue) %></span><span class="stat__sub"><%= stats.paidOrders %> pedidos pagados</span></div>
   <div class="stat"><span class="stat__label">Pedidos pendientes</span><span class="stat__value mono <%= stats.pendingOrders ? 'text-amber' : '' %>"><%= stats.pendingOrders %></span><span class="stat__sub"><a href="/admin/pedidos?status=pending">Revisar</a></span></div>
   <div class="stat"><span class="stat__label">Productos</span><span class="stat__value mono"><%= stats.products.active %></span><span class="stat__sub"><%= stats.products.total %> en total · <%= stats.products.downloads %> descargas</span></div>
-  <div class="stat"><span class="stat__label">Usuarios</span><span class="stat__value mono"><%= stats.users %></span><span class="stat__sub"><%= stats.memberships %> membresías activas<% if (stats.unread) { %> · <a href="/admin/mensajes"><%= stats.unread %> mensajes sin leer</a><% } %></span></div>
+  <div class="stat"><span class="stat__label">Usuarios</span><span class="stat__value mono"><%= stats.users %></span><span class="stat__sub"><%= stats.memberships %> membresías activas<% if (stats.unread) { %> · <a href="/admin/mensajes"><%= stats.unread %> mensajes sin leer</a><% } %><% if (stats.pendingReviews) { %> · <a href="/admin/resenas?status=pending"><%= stats.pendingReviews %> reseñas por aprobar</a><% } %></span></div>
 </div>
 <% if (pendingManual.length) { %>
 <section class="admin-block">

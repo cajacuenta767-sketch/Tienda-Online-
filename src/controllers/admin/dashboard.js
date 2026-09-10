@@ -5,6 +5,7 @@ const users = require('../../models/users');
 const memberships = require('../../models/memberships');
 const contactMessages = require('../../models/contactMessages');
 const downloads = require('../../models/downloads');
+const reviews = require('../../models/reviews');
 
 exports.index = (req, res) => {
   const o = orders.stats();
@@ -19,6 +20,7 @@ exports.index = (req, res) => {
       memberships: memberships.countActive(),
       downloads: downloads.count(),
       unread: contactMessages.unreadCount(),
+      pendingReviews: reviews.pendingCount(),
     },
     pendingManual: orders.pendingManual(),
     recentOrders: orders.recent(8),

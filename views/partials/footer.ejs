@@ -2,7 +2,7 @@
 <footer class="footer">
   <div class="container footer__grid">
     <div class="footer__brand">
-      <a class="nav__logo" href="/"><img src="/img/logo.svg" alt="" width="28" height="28"><span><%= storeName %></span></a>
+      <a class="nav__logo" href="/"><img src="/img/logo.svg" alt="" width="30" height="30"><span><%= storeName %></span></a>
       <p><%= settings.footer_text %></p>
       <% if (settings.facebook_url || settings.instagram_url || settings.youtube_url) { %>
       <div class="cluster">
@@ -16,6 +16,7 @@
       <h4>Tienda</h4>
       <a href="/tienda">Todos los productos</a>
       <% navCategories.forEach(function (c) { %><a href="/tienda/categoria/<%= c.slug %>"><%= c.name %></a><% }) %>
+      <a href="/tienda?oferta=1">En oferta</a>
       <a href="/nuevos">Nuevos lanzamientos</a>
       <a href="/membresia">Membresía</a>
     </div>
@@ -40,14 +41,15 @@
   </div>
   <div class="container footer__bottom">
     <span>© <%= new Date().getFullYear() %> <%= storeName %>. Código con licencia, soporte real.</span>
-    <span class="mono">v1.0.0</span>
+    <span class="mono">v2.0.0</span>
   </div>
 </footer>
 <% if (waEnabled && settings.whatsapp_number) { %>
 <a class="wa-float" href="https://wa.me/<%= settings.whatsapp_number %>?text=<%= encodeURIComponent('Hola ' + storeName + ', tengo una consulta.') %>" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
-  <img src="/img/icons/whatsapp.svg" alt="" width="26" height="26">
+  <img src="/img/icons/whatsapp.svg" alt="" width="28" height="28">
 </a>
 <% } %>
+<div class="toast" data-toast role="status" aria-live="polite"></div>
 <script src="/js/app.js" defer></script>
 <% if (typeof extraScripts !== 'undefined') { %><%- extraScripts %><% } %>
 </body>

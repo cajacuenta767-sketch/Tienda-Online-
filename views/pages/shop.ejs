@@ -1,5 +1,6 @@
 <%- include('../partials/head') %>
 <%- include('../partials/header') %>
+<% const keep = { q, sort }; if (activeCategory) keep.cat = null; %>
 <section class="page-head">
   <div class="container">
     <nav class="breadcrumbs" aria-label="Ruta"><a href="/">Inicio</a><% breadcrumb.forEach(function (b) { %><span>/</span><% if (b.href) { %><a href="<%= b.href %>"><%= b.label %></a><% } else { %><span aria-current="page"><%= b.label %></span><% } %><% }) %></nav>
@@ -10,37 +11,81 @@
   </div>
 </section>
 <section class="section section--tight">
-  <div class="container">
-    <div class="filter-bar">
-      <div class="filter-bar__chips">
-        <a class="tag-chip <%= !activeCategory && !activeTag ? 'is-active' : '' %>" href="/tienda<%= q ? '?q=' + encodeURIComponent(q) : '' %>">Todo</a>
-        <% categories.forEach(function (c) { %><a class="tag-chip <%= activeCategory === c.slug ? 'is-active' : '' %>" href="/tienda/categoria/<%= c.slug %>"><%= c.name %> <small><%= c.product_count %></small></a><% }) %>
+  <div class="container shop-layout">
+    <form class="filters" method="get" action="<%= basePath %>" data-filters data-collapsed="true">
+      <% if (q) { %><input type="hidden" name="q" value="<%= q %>"><% } %>
+      <input type="hidden" name="sort" value="<%= sort %>">
+      <div class="filters__head">
+        <h3>Filtros <% if (filterCount) { %><span class="badge badge--primary"><%= filterCount %></span><% } %></h3>
+        <div class="cluster cluster--tight">
+          <% if (filterCount || q) { %><a class="btn btn--ghost btn--sm" href="<%= basePath %>">Limpiar</a><% } %>
+          <button type="button" class="btn btn--secondary btn--sm filters__toggle" data-filters-toggle>Mostrar</button>
+        </div>
       </div>
-      <form class="filter-bar__sort" method="get" action="<%= basePath %>">
-        <% if (q) { %><input type="hidden" name="q" value="<%= q %>"><% } %>
-        <label for="sort" class="sr-only">Ordenar</label>
-        <select id="sort" name="sort" class="select select--sm" data-auto-submit>
-          <option value="recent" <%= sort === 'recent' ? 'selected' : '' %>>Más recientes</option>
-          <option value="popular" <%= sort === 'popular' ? 'selected' : '' %>>Más vendidos</option>
-          <option value="price_asc" <%= sort === 'price_asc' ? 'selected' : '' %>>Precio: menor a mayor</option>
-          <option value="price_desc" <%= sort === 'price_desc' ? 'selected' : '' %>>Precio: mayor a menor</option>
-          <option value="name" <%= sort === 'name' ? 'selected' : '' %>>Nombre A–Z</option>
-        </select>
-      </form>
+      <fieldset>
+        <legend>Precio (USD)</legend>
+        <div class="filters__range">
+          <input class="input input--sm mono" type="number" name="min" min="0" step="1" placeholder="<%= Math.floor(priceRange.min / 100) %>" value="<%= activeFilters.min %>" aria-label="Precio mínimo">
+          <span>—</span>
+          <input class="input input--sm mono" type="number" name="max" min="0" step="1" placeholder="<%= Math.ceil(priceRange.max / 100) %>" value="<%= activeFilters.max %>" aria-label="Precio máximo">
+        </div>
+        <label class="checkbox"><input type="checkbox" name="oferta" value="1" <%= activeFilters.oferta ? 'checked' : '' %>> Solo en oferta</label>
+      </fieldset>
+      <fieldset>
+        <legend>Categoría</legend>
+        <a class="checkbox" href="/tienda<%= q ? '?q=' + encodeURIComponent(q) : '' %>"><input type="radio" <%= !activeCategory ? 'checked' : '' %> readonly> Todas</a>
+        <% categories.forEach(function (c) { %><a class="checkbox" href="/tienda/categoria/<%= c.slug %>"><input type="radio" <%= activeCategory === c.slug ? 'checked' : '' %> readonly> <%= c.name %> <small><%= c.product_count %></small></a><% }) %>
+      </fieldset>
+      <fieldset>
+        <legend>Tecnología</legend>
+        <% popularTags.forEach(function (t) { %><label class="checkbox"><input type="checkbox" name="tech" value="<%= t.slug %>" <%= activeFilters.tech.includes(t.slug) ? 'checked' : '' %>> <%= t.name %> <small><%= t.product_count %></small></label><% }) %>
+      </fieldset>
+      <fieldset>
+        <legend>Valoración</legend>
+        <% [4, 3].forEach(function (r) { %><label class="checkbox"><input type="radio" name="rating" value="<%= r %>" <%= activeFilters.rating === r ? 'checked' : '' %>> <%- stars(r) %> <span>o más</span></label><% }) %>
+        <label class="checkbox"><input type="radio" name="rating" value="" <%= !activeFilters.rating ? 'checked' : '' %>> Cualquiera</label>
+      </fieldset>
+      <button class="btn btn--primary btn--block" type="submit">Aplicar filtros</button>
+    </form>
+    <div>
+      <div class="filter-bar">
+        <div class="filter-bar__chips">
+          <a class="tag-chip <%= !activeCategory && !activeTag ? 'is-active' : '' %>" href="/tienda<%= q ? '?q=' + encodeURIComponent(q) : '' %>">Todo</a>
+          <% categories.forEach(function (c) { %><a class="tag-chip <%= activeCategory === c.slug ? 'is-active' : '' %>" href="/tienda/categoria/<%= c.slug %>"><%= c.name %> <small><%= c.product_count %></small></a><% }) %>
+          <a class="tag-chip <%= activeFilters.oferta ? 'is-active' : '' %>" href="/tienda?oferta=1">🔥 Ofertas</a>
+        </div>
+        <form class="filter-bar__sort" method="get" action="<%= basePath %>">
+          <% if (q) { %><input type="hidden" name="q" value="<%= q %>"><% } %>
+          <% if (activeFilters.min) { %><input type="hidden" name="min" value="<%= activeFilters.min %>"><% } %>
+          <% if (activeFilters.max) { %><input type="hidden" name="max" value="<%= activeFilters.max %>"><% } %>
+          <% activeFilters.tech.forEach(function (t) { %><input type="hidden" name="tech" value="<%= t %>"><% }) %>
+          <% if (activeFilters.rating) { %><input type="hidden" name="rating" value="<%= activeFilters.rating %>"><% } %>
+          <% if (activeFilters.oferta) { %><input type="hidden" name="oferta" value="1"><% } %>
+          <label for="sort" class="sr-only">Ordenar</label>
+          <select id="sort" name="sort" class="select select--sm" data-auto-submit>
+            <option value="recent" <%= sort === 'recent' ? 'selected' : '' %>>Más recientes</option>
+            <option value="popular" <%= sort === 'popular' ? 'selected' : '' %>>Más vendidos</option>
+            <option value="rating" <%= sort === 'rating' ? 'selected' : '' %>>Mejor valorados</option>
+            <option value="price_asc" <%= sort === 'price_asc' ? 'selected' : '' %>>Precio: menor a mayor</option>
+            <option value="price_desc" <%= sort === 'price_desc' ? 'selected' : '' %>>Precio: mayor a menor</option>
+            <option value="name" <%= sort === 'name' ? 'selected' : '' %>>Nombre A–Z</option>
+          </select>
+        </form>
+      </div>
+      <% if (result.rows.length) { %>
+        <div class="grid grid-3">
+          <% result.rows.forEach(function (product) { %><%- include('../partials/product-card', { product }) %><% }) %>
+        </div>
+        <%- include('../partials/pagination', { page: result.page, pages: result.pages, basePath, query: { q, sort, min: activeFilters.min, max: activeFilters.max, rating: activeFilters.rating || '', oferta: activeFilters.oferta ? '1' : '' } }) %>
+      <% } else { %>
+        <div class="empty-state">
+          <p class="mono">// sin resultados</p>
+          <h2>No encontramos productos<%= q ? ` para «${q}»` : '' %></h2>
+          <p>Prueba con otra búsqueda, quita algún filtro o explora todas las categorías.</p>
+          <a class="btn btn--primary" href="/tienda">Ver toda la tienda</a>
+        </div>
+      <% } %>
     </div>
-    <% if (result.rows.length) { %>
-      <div class="grid grid-3">
-        <% result.rows.forEach(function (product) { %><%- include('../partials/product-card', { product }) %><% }) %>
-      </div>
-      <%- include('../partials/pagination', { page: result.page, pages: result.pages, basePath, query: { q, sort } }) %>
-    <% } else { %>
-      <div class="empty-state">
-        <p class="mono">// sin resultados</p>
-        <h2>No encontramos productos<%= q ? ` para «${q}»` : '' %></h2>
-        <p>Prueba con otra búsqueda o explora todas las categorías.</p>
-        <a class="btn btn--primary" href="/tienda">Ver toda la tienda</a>
-      </div>
-    <% } %>
   </div>
 </section>
 <%- include('../partials/footer') %>
